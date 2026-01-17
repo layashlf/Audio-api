@@ -11,36 +11,44 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
     token: string,
     userId: string,
   ): Promise<RefreshToken | null> {
-    const tokenData = await this.prisma.refreshToken.findFirst({
+    // Get all potential tokens for the user
+    const tokenDataList = await this.prisma.refreshToken.findMany({
       where: {
-        token: await this.hashToken(token),
         userId,
         isRevoked: false,
         expiresAt: { gt: new Date() },
       },
     });
 
-    if (!tokenData) {
-      return null;
+    // Find the token that matches by comparing with hashed version
+    for (const tokenData of tokenDataList) {
+      const refreshToken = RefreshToken.fromPersistence(tokenData);
+      if (await refreshToken.matchesToken(token)) {
+        return refreshToken;
+      }
     }
 
-    return RefreshToken.fromPersistence(tokenData);
+    return null;
   }
 
   async findByToken(token: string): Promise<RefreshToken | null> {
-    const tokenData = await this.prisma.refreshToken.findFirst({
+    // Get all potential tokens
+    const tokenDataList = await this.prisma.refreshToken.findMany({
       where: {
-        token: await this.hashToken(token),
         isRevoked: false,
         expiresAt: { gt: new Date() },
       },
     });
 
-    if (!tokenData) {
-      return null;
+    // Find the token that matches by comparing with hashed version
+    for (const tokenData of tokenDataList) {
+      const refreshToken = RefreshToken.fromPersistence(tokenData);
+      if (await refreshToken.matchesToken(token)) {
+        return refreshToken;
+      }
     }
 
-    return RefreshToken.fromPersistence(tokenData);
+    return null;
   }
 
   async save(refreshToken: RefreshToken): Promise<void> {
@@ -64,10 +72,5 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
       where: { id: tokenId },
       data: { isRevoked: true },
     });
-  }
-
-  private async hashToken(token: string): Promise<string> {
-    const bcrypt = require('bcrypt');
-    return await bcrypt.hash(token, 10);
   }
 }
