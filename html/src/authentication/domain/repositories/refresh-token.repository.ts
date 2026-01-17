@@ -5,6 +5,7 @@ export interface IRefreshTokenRepository {
     token: string,
     userId: string,
   ): Promise<RefreshToken | null>;
+  findByToken(token: string): Promise<RefreshToken | null>;
   save(refreshToken: RefreshToken): Promise<void>;
   revokeByUserId(userId: string): Promise<void>;
   revoke(tokenId: string): Promise<void>;
