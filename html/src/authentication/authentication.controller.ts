@@ -36,24 +36,14 @@ export class AuthenticationController {
     return this.authenticationService.register(registerDto);
   }
 
-  @ApiHeader({
-    name: 'user-agent',
-    description: 'The user agent of the browser (sent automatically)',
-    required: false,
-  })
   @Post('login')
   @UseInterceptors(new TransformInterceptor(LoginResponseDto))
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
-    @Headers('user-agent') userAgent: string,
   ) {
-    const res = await this.authenticationService.login(
-      loginDto,
-      request,
-      userAgent,
-    );
+    const res = await this.authenticationService.login(loginDto, request);
 
     if (res.refreshToken) {
       // Set refresh token as httpOnly cookie for security
@@ -63,10 +53,11 @@ export class AuthenticationController {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
-        path: '/auth/refresh',
+        path: '/v1/auth/refresh',
         expires: new Date(
           Date.now() +
-            this.configService.get<number>('JWT_REFRESH_TOKEN_EXPIRE_AT'),
+            this.configService.get<number>('JWT_REFRESH_TOKEN_EXPIRE_AT') *
+              1000,
         ),
       });
       return {
@@ -82,7 +73,6 @@ export class AuthenticationController {
   async refreshTokens(
     @Query() queryParams,
     @Req() request: Request,
-    @Headers('user-agent') userAgent: string,
     @Res({ passthrough: true }) response: Response,
   ) {
     const userId = request.user['sub'];
@@ -123,7 +113,7 @@ export class AuthenticationController {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      path: '/auth/refresh',
+      path: '/v1/auth/refresh',
     });
 
     return { message: 'Logged out successfully' };
