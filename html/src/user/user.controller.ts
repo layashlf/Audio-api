@@ -19,6 +19,7 @@ import { GetUsersUseCase } from './application/use-cases/get-users.use-case';
 import { GetUserByIdUseCase } from './application/use-cases/get-user-by-id.use-case';
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case';
 import { UserResponseDto } from './dto/user-response.dto';
+import { PaginatedUsersResponseDto } from './dto/pagination-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './domain/entities/user';
 import { SubscriptionTier } from '@prisma/client';
@@ -46,18 +47,19 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Users retrieved successfully',
-    type: [UserResponseDto],
+    type: PaginatedUsersResponseDto,
   })
   async getUsers(
     @Query('limit') limit: number = 10,
     @Query('offset') offset: number = 0,
     @Query('subscriptionStatus') subscriptionStatus?: SubscriptionTier,
-  ): Promise<{ users: UserResponseDto[]; total: number }> {
+  ): Promise<PaginatedUsersResponseDto> {
     const filters = subscriptionStatus ? { subscriptionStatus } : undefined;
     const result = await this.getUsersUseCase.execute(limit, offset, filters);
+
     return {
-      users: result.users.map(this.mapToDto),
-      total: result.total,
+      data: result.users.map(this.mapToDto),
+      pagination: result.pagination,
     };
   }
 
