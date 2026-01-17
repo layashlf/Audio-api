@@ -2,9 +2,11 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const baseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+
 async function registerUser(email, password, displayName) {
   try {
-    const response = await fetch('http://localhost:3000/auth/register', {
+    const response = await fetch(`${baseUrl}/v1/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

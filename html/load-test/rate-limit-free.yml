@@ -1,5 +1,5 @@
 config:
-  target: 'http://localhost:3000'
+  target: '{{ $processEnvironment.API_BASE_URL }}'
   processor: 'auth.js'
   phases:
     - duration: 60
@@ -14,6 +14,6 @@ scenarios:
       - loginFree
     flow:
       - get:
-          url: '/audio'
+          url: '/v1/audio'
           headers:
             Authorization: 'Bearer {{token}}'

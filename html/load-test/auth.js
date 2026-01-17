@@ -1,6 +1,8 @@
+const baseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+
 module.exports = {
   loginFree: (requestParams, context, events, done) => {
-    fetch('http://localhost:3000/auth/login', {
+    fetch(`${baseUrl}/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -24,7 +26,7 @@ module.exports = {
   },
 
   loginPaid: (requestParams, context, events, done) => {
-    fetch('http://localhost:3000/auth/login', {
+    fetch(`${baseUrl}/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

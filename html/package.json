@@ -19,8 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:users": "node load-test/seed-users.js",
-    "load-test:free": "artillery run load-test/rate-limit-free.yml",
-    "load-test:paid": "artillery run load-test/rate-limit-paid.yml"
+    "load-test:free": "API_BASE_URL=${API_BASE_URL:-http://localhost:3000} artillery run load-test/rate-limit-free.yml",
+    "load-test:paid": "API_BASE_URL=${API_BASE_URL:-http://localhost:3000} artillery run load-test/rate-limit-paid.yml"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.3",
