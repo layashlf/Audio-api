@@ -5,7 +5,6 @@ import { GetSubscriptionUseCase } from './application/use-cases/get-subscription
 import { UpgradeSubscriptionUseCase } from './application/use-cases/upgrade-subscription.use-case';
 import { RateLimiterService } from './infrastructure/services/rate-limiter.service';
 import { RateLimitingMiddleware } from './infrastructure/services/rate-limiting.middleware';
-import { PriorityQueueService } from './infrastructure/services/priority-queue.service';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
@@ -19,7 +18,6 @@ import { PrismaModule } from '../prisma/prisma.module';
     GetSubscriptionUseCase,
     UpgradeSubscriptionUseCase,
     RateLimiterService,
-    // PriorityQueueService, // Uncomment when implementing Phase 3
   ],
   exports: [RateLimiterService, GetSubscriptionUseCase],
 })
