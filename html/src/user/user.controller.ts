@@ -7,7 +7,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AccessTokenGuard } from '../authentication/guard/access-token.guard';
 import { GetUsersUseCase } from './application/use-cases/get-users.use-case';
 import { GetUserByIdUseCase } from './application/use-cases/get-user-by-id.use-case';
@@ -15,8 +21,10 @@ import { UpdateUserUseCase } from './application/use-cases/update-user.use-case'
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './domain/entities/user';
+import { SubscriptionTier } from '@prisma/client';
 
 @ApiTags('Users')
+@ApiBearerAuth()
 @Controller('users')
 @UseGuards(AccessTokenGuard)
 export class UserController {
@@ -27,9 +35,14 @@ export class UserController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all users with pagination' })
+  @ApiOperation({ summary: 'Get all users with pagination and filters' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiQuery({
+    name: 'subscriptionStatus',
+    required: false,
+    enum: SubscriptionTier,
+  })
   @ApiResponse({
     status: 200,
     description: 'Users retrieved successfully',
@@ -38,8 +51,10 @@ export class UserController {
   async getUsers(
     @Query('limit') limit: number = 10,
     @Query('offset') offset: number = 0,
+    @Query('subscriptionStatus') subscriptionStatus?: SubscriptionTier,
   ): Promise<{ users: UserResponseDto[]; total: number }> {
-    const result = await this.getUsersUseCase.execute(limit, offset);
+    const filters = subscriptionStatus ? { subscriptionStatus } : undefined;
+    const result = await this.getUsersUseCase.execute(limit, offset, filters);
     return {
       users: result.users.map(this.mapToDto),
       total: result.total,
@@ -80,11 +95,8 @@ export class UserController {
       id: user.id,
       email: user.email,
       displayName: user.displayName,
-      emailVerified: user.emailVerified,
       status: user.status,
       subscriptionStatus: user.subscriptionStatus,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
     };
   }
 }

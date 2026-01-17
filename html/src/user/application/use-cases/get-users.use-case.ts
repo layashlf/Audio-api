@@ -3,6 +3,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { User } from '../../domain/entities/user';
+import { SubscriptionTier } from '@prisma/client';
 
 @Injectable()
 export class GetUsersUseCase {
@@ -16,8 +17,9 @@ export class GetUsersUseCase {
   async execute(
     limit: number = 10,
     offset: number = 0,
+    filters?: { subscriptionStatus?: SubscriptionTier },
   ): Promise<{ users: User[]; total: number }> {
-    const cacheKey = `users:list:${limit}:${offset}`;
+    const cacheKey = `users:list:${limit}:${offset}:${filters?.subscriptionStatus || 'all'}`;
 
     // Try to get from cache
     const cached = await this.cacheManager.get<{
@@ -30,8 +32,8 @@ export class GetUsersUseCase {
 
     // Get from database
     const [users, total] = await Promise.all([
-      this.userRepository.findAll(limit, offset),
-      this.userRepository.count(),
+      this.userRepository.findAll(limit, offset, filters),
+      this.userRepository.count(filters),
     ]);
 
     const result = { users, total };

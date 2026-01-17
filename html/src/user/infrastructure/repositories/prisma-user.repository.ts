@@ -2,13 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { User } from '../../domain/entities/user';
+import { SubscriptionTier } from '@prisma/client';
 
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(limit: number = 10, offset: number = 0): Promise<User[]> {
+  async findAll(
+    limit: number = 10,
+    offset: number = 0,
+    filters?: { subscriptionStatus?: SubscriptionTier },
+  ): Promise<User[]> {
+    const where = filters?.subscriptionStatus
+      ? { subscriptionStatus: filters.subscriptionStatus }
+      : {};
+
     const users = await this.prisma.user.findMany({
+      where,
       take: limit,
       skip: offset,
       orderBy: { createdAt: 'desc' },
@@ -72,7 +82,13 @@ export class PrismaUserRepository implements UserRepository {
     }
   }
 
-  async count(): Promise<number> {
-    return this.prisma.user.count();
+  async count(filters?: {
+    subscriptionStatus?: SubscriptionTier;
+  }): Promise<number> {
+    const where = filters?.subscriptionStatus
+      ? { subscriptionStatus: filters.subscriptionStatus }
+      : {};
+
+    return this.prisma.user.count({ where });
   }
 }
