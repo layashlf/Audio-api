@@ -69,7 +69,6 @@ export class AuthenticationController {
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
   async refreshTokens(
-    @Query() queryParams,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
@@ -85,10 +84,11 @@ export class AuthenticationController {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
-        path: '/auth/refresh',
+        path: '/v1/auth/refresh',
         expires: new Date(
           Date.now() +
-            this.configService.get<number>('JWT_REFRESH_TOKEN_EXPIRE_AT'),
+            this.configService.get<number>('JWT_REFRESH_TOKEN_EXPIRE_AT') *
+              1000,
         ),
       });
       return {
