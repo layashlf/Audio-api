@@ -48,7 +48,6 @@ model User {
   prompts       Prompt[]
   audioFiles    Audio[]
   refreshTokens RefreshToken[]
-  auditLogs     AuditLog[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -109,15 +108,4 @@ model Audio {
   @@index([userId])
   @@index([title]) // Optimized for Search
   @@map("audio_files")
-}
-
-model AuditLog {
-  id        String   @id @default(uuid())
-  action    String // e.g., "SUBSCRIPTION_UPGRADE", "AUDIO_DELETED"
-  metadata  Json? // Contextual data
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("audit_logs")
 }
