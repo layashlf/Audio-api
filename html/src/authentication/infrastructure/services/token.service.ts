@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ITokenPayload } from '../../interfaces';
+import { IRefreshTokenRepository } from '../../domain/repositories/refresh-token.repository';
 
 export interface TokenPair {
   accessToken: string;
@@ -13,6 +14,8 @@ export class TokenService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @Inject('IRefreshTokenRepository')
+    private readonly refreshTokenRepository: IRefreshTokenRepository,
   ) {}
 
   async generateAccessToken(
@@ -55,5 +58,15 @@ export class TokenService {
     return await this.jwtService.verifyAsync(token, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
     });
+  }
+
+  async revokeRefreshToken(token: string): Promise<void> {
+    // Find the refresh token by its value and revoke it
+    const refreshTokenEntity =
+      await this.refreshTokenRepository.findByToken(token);
+
+    if (refreshTokenEntity) {
+      await this.refreshTokenRepository.revoke(refreshTokenEntity.id);
+    }
   }
 }
