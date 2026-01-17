@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_APPROVAL
+  REJECTED
+}
+
+enum SubscriptionTier {
+  FREE
+  PAID
+}
+
+enum PromptStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// --- MODELS ---
+
+model User {
+  id                 String           @id @default(uuid())
+  email              String           @unique
+  password           String
+  displayName        String?          @map("display_name")
+  emailVerified      Boolean          @default(false) @map("email_verified")
+  status             UserStatus?      @default(PENDING_APPROVAL)
+  subscriptionStatus SubscriptionTier @default(FREE) @map("subscription_status")
+
+  // Relationships
+  prompts       Prompt[]
+  audioFiles    Audio[]
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique // Store hashed token for security
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, token])
+  @@map("refresh_tokens")
+}
+
+model Prompt {
+  id       String       @id @default(uuid())
+  text     String       @db.Text
+  status   PromptStatus @default(PENDING)
+  priority Int          @default(0) // Higher for PAID users
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Link to generated audio (one prompt = one final audio)
+  audio Audio?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt]) // Optimized for the Cron query
+  @@index([userId])
+  @@map("prompts")
+}
+
+model Audio {
+  id       String @id @default(uuid())
+  title    String
+  url      String @db.Text
+  fileSize Int?   @map("file_size") // Metadata example
+  duration Float? // Duration in seconds
+
+  promptId String @unique @map("prompt_id")
+  prompt   Prompt @relation(fields: [promptId], references: [id])
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([title]) // Optimized for Search
+  @@map("audio_files")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String // e.g., "SUBSCRIPTION_UPGRADE", "AUDIO_DELETED"
+  metadata  Json? // Contextual data
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
