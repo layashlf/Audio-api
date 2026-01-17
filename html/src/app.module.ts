@@ -6,6 +6,9 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { UserModule } from './user/user.module';
 import { AudioModule } from './audio/audio.module';
 import { SearchModule } from './search/search.module';
+import { PromptModule } from './prompt/prompt.module';
+import { QueueModule } from './queue/queue.module';
+import { WebsocketModule } from './websocket/websocket.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
@@ -41,8 +44,11 @@ import { redisStore } from 'cache-manager-redis-yet';
     AuthenticationModule,
     SubscriptionModule,
     UserModule,
+    PromptModule,
     AudioModule,
     SearchModule,
+    QueueModule,
+    WebsocketModule,
     PrismaModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
