@@ -10,6 +10,7 @@ export interface RegisterUserInput {
   email: string;
   password: string;
   displayName?: string;
+  status: UserStatus;
 }
 
 export interface RegisterUserOutput {
@@ -43,8 +44,14 @@ export class RegisterUserUseCase {
 
     // Create user
     const userId = uuidv4();
-    const user = User.create(userId, email, password, input.displayName);
-
+    const user = User.create(
+      userId,
+      email,
+      password,
+      input.displayName,
+      input.status,
+    );
+    console.log(user);
     // Save user
     await this.userRepository.save(user);
 
