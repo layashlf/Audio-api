@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { SentryModule } from '@sentry/nestjs/setup';
+import { AuthenticationModule } from './authentication/authentication.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
@@ -9,7 +10,7 @@ import { envValidation } from './config/env.validation';
 @Module({
   imports: [
     SentryModule.forRoot(),
-
+    AuthenticationModule,
     PrismaModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
