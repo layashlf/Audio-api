@@ -1,0 +1,19 @@
+config:
+  target: 'http://localhost:3000'
+  processor: 'auth.js'
+  phases:
+    - duration: 60
+      arrivalRate: 1 # 1 request per second = 60 per minute, exceeds FREE limit of 20
+  defaults:
+    headers:
+      Authorization: 'Bearer {{token}}'
+
+scenarios:
+  - name: 'Rate limit test for FREE user'
+    beforeRequest:
+      - loginFree
+    flow:
+      - get:
+          url: '/audio'
+          headers:
+            Authorization: 'Bearer {{token}}'
