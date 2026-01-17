@@ -25,14 +25,14 @@ export class TokenService {
     return await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
       expiresIn:
-        expiresIn ?? this.configService.get<string>('JWT_TOKEN_EXPIRE_AT'),
+        expiresIn ?? this.configService.get<number>('JWT_TOKEN_EXPIRE_AT'),
     });
   }
 
   async generateRefreshToken(payload: ITokenPayload): Promise<string> {
     return await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRE_AT'),
+      expiresIn: this.configService.get<number>('JWT_REFRESH_TOKEN_EXPIRE_AT'),
     });
   }
 
