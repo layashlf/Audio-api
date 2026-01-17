@@ -54,36 +54,6 @@ export class EnvironmentVariables {
   SALT_OR_ROUNDS: number;
 
   @IsString()
-  @IsNotEmpty()
-  MAIL_HOST: string;
-
-  @IsNumber()
-  @Type(() => Number)
-  @IsNotEmpty()
-  MAIL_PORT: number = 1025;
-
-  @IsString()
-  @IsNotEmpty()
-  MAIL_USERNAME: string;
-
-  @IsString()
-  @IsNotEmpty()
-  MAIL_PASSWORD: string;
-
-  @IsString()
-  @IsNotEmpty()
-  MAIL_FROM: string;
-
-  @IsString()
-  @IsNotEmpty()
-  MAIL_FROM_NAME: string;
-
-  @IsNumber()
-  @Type(() => Number)
-  @IsNotEmpty()
-  EMAIL_EXPIRE_PERIOD: number;
-
-  @IsString()
   MEILI_HOST?: string;
 
   @IsString()
