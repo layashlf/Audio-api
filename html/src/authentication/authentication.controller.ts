@@ -116,9 +116,4 @@ export class AuthenticationController {
 
     return { message: 'Logged out successfully' };
   }
-
-  @Get('email')
-  checkIfEmailExists(@Query('email') email: string) {
-    return this.authenticationService.checkIfEmailExists(email);
-  }
 }

@@ -84,8 +84,4 @@ export class AuthenticationService {
       refreshToken,
     });
   }
-
-  async checkIfEmailExists(email: string) {
-    return await this.checkEmailExistsUseCase.execute({ email });
-  }
 }
