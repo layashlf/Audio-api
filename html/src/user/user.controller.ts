@@ -37,8 +37,24 @@ export class UserController {
 
   @Get()
   @ApiOperation({ summary: 'Get all users with pagination and filters' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Items to skip',
+  })
   @ApiQuery({
     name: 'subscriptionStatus',
     required: false,
@@ -50,10 +66,18 @@ export class UserController {
     type: PaginatedUsersResponseDto,
   })
   async getUsers(
+    @Query('page') page?: number,
     @Query('limit') limit: number = 10,
-    @Query('offset') offset: number = 0,
+    @Query('offset') offset?: number,
     @Query('subscriptionStatus') subscriptionStatus?: SubscriptionTier,
   ): Promise<PaginatedUsersResponseDto> {
+    // Calculate offset from page if provided
+    if (page && page > 0) {
+      offset = (page - 1) * limit;
+    } else if (!offset) {
+      offset = 0;
+    }
+
     const filters = subscriptionStatus ? { subscriptionStatus } : undefined;
     const result = await this.getUsersUseCase.execute(limit, offset, filters);
 
