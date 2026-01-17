@@ -36,7 +36,9 @@ export class SubscriptionController {
   @ApiOperation({ summary: 'Get current user subscription' })
   @ApiResponse({ status: 200, type: SubscriptionResponseDto })
   async getSubscription(@Request() req): Promise<SubscriptionResponseDto> {
-    const subscription = await this.getSubscriptionUseCase.execute(req.user.id);
+    const subscription = await this.getSubscriptionUseCase.execute(
+      req.user.sub,
+    );
     return this.mapToResponseDto(subscription);
   }
 
@@ -47,7 +49,7 @@ export class SubscriptionController {
     @Request() req,
   ): Promise<SubscriptionResponseDto> {
     const subscription = await this.subscribeSubscriptionUseCase.execute(
-      req.user.id,
+      req.user.sub,
     );
     return this.mapToResponseDto(subscription);
   }
@@ -57,7 +59,7 @@ export class SubscriptionController {
   @ApiResponse({ status: 200, type: SubscriptionResponseDto })
   async cancelSubscription(@Request() req): Promise<SubscriptionResponseDto> {
     const subscription = await this.cancelSubscriptionUseCase.execute(
-      req.user.id,
+      req.user.sub,
     );
     return this.mapToResponseDto(subscription);
   }
@@ -70,8 +72,6 @@ export class SubscriptionController {
       tier: subscription.tier,
       rateLimit: subscription.getRateLimit(),
       priority: subscription.getPriority(),
-      createdAt: subscription.createdAt,
-      updatedAt: subscription.updatedAt,
     };
   }
 }

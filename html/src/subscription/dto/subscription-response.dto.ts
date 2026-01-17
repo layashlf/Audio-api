@@ -5,6 +5,4 @@ export class SubscriptionResponseDto {
   tier: SubscriptionTier;
   rateLimit: number;
   priority: number;
-  createdAt: Date;
-  updatedAt: Date;
 }
