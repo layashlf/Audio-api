@@ -2,7 +2,8 @@ import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { SubscriptionController } from './subscription.controller';
 import { PrismaSubscriptionRepository } from './infrastructure/repositories/prisma-subscription.repository';
 import { GetSubscriptionUseCase } from './application/use-cases/get-subscription.use-case';
-import { UpgradeSubscriptionUseCase } from './application/use-cases/upgrade-subscription.use-case';
+import { SubscribeSubscriptionUseCase } from './application/use-cases/subscribe-subscription.use-case';
+import { CancelSubscriptionUseCase } from './application/use-cases/cancel-subscription.use-case';
 import { RateLimiterService } from './infrastructure/services/rate-limiter.service';
 import { RateLimitingMiddleware } from './infrastructure/services/rate-limiting.middleware';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -16,7 +17,8 @@ import { PrismaModule } from '../prisma/prisma.module';
       useClass: PrismaSubscriptionRepository,
     },
     GetSubscriptionUseCase,
-    UpgradeSubscriptionUseCase,
+    SubscribeSubscriptionUseCase,
+    CancelSubscriptionUseCase,
     RateLimiterService,
   ],
   exports: [RateLimiterService, GetSubscriptionUseCase],

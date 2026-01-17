@@ -1,8 +1,7 @@
 import {
   Controller,
   Get,
-  Put,
-  Body,
+  Post,
   UseGuards,
   Request,
   ClassSerializerInterceptor,
@@ -16,9 +15,9 @@ import {
 } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../authentication/guard/access-token.guard';
 import { GetSubscriptionUseCase } from './application/use-cases/get-subscription.use-case';
-import { UpgradeSubscriptionUseCase } from './application/use-cases/upgrade-subscription.use-case';
+import { SubscribeSubscriptionUseCase } from './application/use-cases/subscribe-subscription.use-case';
+import { CancelSubscriptionUseCase } from './application/use-cases/cancel-subscription.use-case';
 import { SubscriptionResponseDto } from './dto/subscription-response.dto';
-import { UpgradeSubscriptionDto } from './dto/upgrade-subscription.dto';
 import { Subscription } from './domain/entities/subscription';
 
 @ApiTags('Subscription')
@@ -29,7 +28,8 @@ import { Subscription } from './domain/entities/subscription';
 export class SubscriptionController {
   constructor(
     private readonly getSubscriptionUseCase: GetSubscriptionUseCase,
-    private readonly upgradeSubscriptionUseCase: UpgradeSubscriptionUseCase,
+    private readonly subscribeSubscriptionUseCase: SubscribeSubscriptionUseCase,
+    private readonly cancelSubscriptionUseCase: CancelSubscriptionUseCase,
   ) {}
 
   @Get()
@@ -40,16 +40,24 @@ export class SubscriptionController {
     return this.mapToResponseDto(subscription);
   }
 
-  @Put('upgrade')
-  @ApiOperation({ summary: 'Upgrade user subscription' })
+  @Post('subscribe')
+  @ApiOperation({ summary: 'Subscribe to PAID tier' })
   @ApiResponse({ status: 200, type: SubscriptionResponseDto })
-  async upgradeSubscription(
+  async subscribeSubscription(
     @Request() req,
-    @Body() dto: UpgradeSubscriptionDto,
   ): Promise<SubscriptionResponseDto> {
-    const subscription = await this.upgradeSubscriptionUseCase.execute(
+    const subscription = await this.subscribeSubscriptionUseCase.execute(
       req.user.id,
-      dto.tier,
+    );
+    return this.mapToResponseDto(subscription);
+  }
+
+  @Post('cancel')
+  @ApiOperation({ summary: 'Cancel subscription (downgrade to FREE)' })
+  @ApiResponse({ status: 200, type: SubscriptionResponseDto })
+  async cancelSubscription(@Request() req): Promise<SubscriptionResponseDto> {
+    const subscription = await this.cancelSubscriptionUseCase.execute(
+      req.user.id,
     );
     return this.mapToResponseDto(subscription);
   }

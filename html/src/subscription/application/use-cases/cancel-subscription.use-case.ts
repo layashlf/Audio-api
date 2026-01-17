@@ -6,14 +6,17 @@ import {
 import { SubscriptionRepository } from '../../domain/repositories/subscription.repository';
 
 @Injectable()
-export class UpgradeSubscriptionUseCase {
+export class CancelSubscriptionUseCase {
   constructor(
     @Inject('SubscriptionRepository')
     private readonly subscriptionRepository: SubscriptionRepository,
   ) {}
 
-  async execute(userId: string, tier: SubscriptionTier): Promise<Subscription> {
-    // TODO: Implement payment processing integration (Stripe/PayPal) for subscription upgrades
-    return await this.subscriptionRepository.updateTier(userId, tier);
+  async execute(userId: string): Promise<Subscription> {
+    // Cancel subscription by downgrading to FREE tier
+    return await this.subscriptionRepository.updateTier(
+      userId,
+      SubscriptionTier.FREE,
+    );
   }
 }
