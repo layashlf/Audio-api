@@ -7,7 +7,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AccessTokenGuard } from '../authentication/guard/access-token.guard';
 import { GetAudiosUseCase } from './application/use-cases/get-audios.use-case';
 import { GetAudioByIdUseCase } from './application/use-cases/get-audio-by-id.use-case';
@@ -17,6 +23,7 @@ import { UpdateAudioDto } from './dto/update-audio.dto';
 import { Audio } from './domain/entities/audio';
 
 @ApiTags('Audio')
+@ApiBearerAuth()
 @Controller('audio')
 @UseGuards(AccessTokenGuard)
 export class AudioController {
