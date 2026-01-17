@@ -19,6 +19,7 @@ import { LoginDto, LoginResponseDto } from './dto/login.dto';
 
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
+import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthenticationController {
@@ -36,6 +37,7 @@ export class AuthenticationController {
   }
 
   @Post('login')
+  @ApiResponse({ status: 200, type: LoginResponseDto })
   @UseInterceptors(new TransformInterceptor(LoginResponseDto))
   async login(
     @Body() loginDto: LoginDto,

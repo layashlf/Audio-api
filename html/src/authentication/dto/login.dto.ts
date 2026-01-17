@@ -4,7 +4,7 @@ import { IsBoolean, IsDefined, IsEmail, IsString } from 'class-validator';
 import { UserInfoDto } from './user-info.dto';
 
 export class LoginDto {
-  @ApiProperty({ example: 'Cathryn98@example.org' })
+  @ApiProperty({ example: 'test@example.com' })
   @IsEmail()
   @IsDefined()
   email: string;
@@ -24,14 +24,6 @@ export class LoginResponseDto {
   @IsString()
   @Expose()
   refreshToken: string;
-
-  @IsString()
-  @Expose()
-  partialAccessToken: string;
-
-  @IsBoolean()
-  @Expose()
-  twoFactorRequired: Boolean;
 
   @IsString()
   @Expose()
