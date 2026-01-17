@@ -118,8 +118,6 @@ services:
       networks:
         - nest-api-network
 
-  
-
   meilisearch:
     container_name: meilisearch
     image: getmeili/meilisearch:latest

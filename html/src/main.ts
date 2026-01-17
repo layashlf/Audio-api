@@ -7,7 +7,6 @@ import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as fs from 'fs';
-import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
   const tempConfig = new ConfigService();
@@ -49,7 +48,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api/docs', app, document);
   await app.listen(configService.get('PORT') ?? 3000);
 }
 bootstrap();
