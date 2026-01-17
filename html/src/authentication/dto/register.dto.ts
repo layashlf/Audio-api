@@ -60,10 +60,6 @@ export class RegisterResponseDto {
 
   @Expose()
   @ApiProperty()
-  emailVerified: boolean;
-
-  @Expose()
-  @ApiProperty()
   status?: string;
 
   @Expose()
