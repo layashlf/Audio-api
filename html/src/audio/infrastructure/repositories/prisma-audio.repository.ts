@@ -7,6 +7,38 @@ import { Audio } from '../../domain/entities/audio';
 export class PrismaAudioRepository implements AudioRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  async create(data: {
+    title: string;
+    url: string;
+    promptId: string;
+    userId: string;
+    fileSize?: number;
+    duration?: number;
+  }): Promise<Audio> {
+    const audio = await this.prisma.audio.create({
+      data: {
+        title: data.title,
+        url: data.url,
+        promptId: data.promptId,
+        userId: data.userId,
+        fileSize: data.fileSize,
+        duration: data.duration,
+      },
+    });
+
+    return Audio.fromPersistence({
+      id: audio.id,
+      title: audio.title,
+      url: audio.url,
+      fileSize: audio.fileSize || undefined,
+      duration: audio.duration || undefined,
+      promptId: audio.promptId,
+      userId: audio.userId,
+      createdAt: audio.createdAt,
+      updatedAt: audio.updatedAt,
+    });
+  }
+
   async findAll(limit: number = 10, offset: number = 0): Promise<Audio[]> {
     const audios = await this.prisma.audio.findMany({
       take: limit,

@@ -18,6 +18,6 @@ import { PrismaModule } from '../prisma/prisma.module';
     GetAudioByIdUseCase,
     UpdateAudioUseCase,
   ],
-  exports: [],
+  exports: ['AudioRepository'],
 })
 export class AudioModule {}
