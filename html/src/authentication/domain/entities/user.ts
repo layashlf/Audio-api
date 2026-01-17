@@ -22,8 +22,9 @@ export class User {
     email: Email,
     password: Password,
     displayName?: string,
+    status: UserStatus = UserStatus.PENDING_APPROVAL,
   ): User {
-    return new User(id, email, password, displayName);
+    return new User(id, email, password, displayName, false, status);
   }
 
   static fromPersistence(data: {
