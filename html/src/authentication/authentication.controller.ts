@@ -40,7 +40,6 @@ export class AuthenticationController {
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
-    @Req() request: Request,
   ) {
     const res = await this.authenticationService.login(loginDto);
 
