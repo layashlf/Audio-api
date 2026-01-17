@@ -25,11 +25,23 @@ export class PrismaPromptRepository implements PromptRepository {
     );
   }
 
-  async findByUserId(userId: string): Promise<Prompt[]> {
+  async findByUserId(
+    userId: string,
+    limit: number = 10,
+    offset: number = 0,
+    filters?: { status?: string },
+  ): Promise<Prompt[]> {
+    const where: any = { userId };
+    if (filters?.status) {
+      where.status = filters.status;
+    }
+
     const prompts = await this.prisma.prompt.findMany({
-      where: { userId },
+      where,
       include: { audio: true },
       orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
     });
     return prompts.map(
       (p) =>
@@ -44,6 +56,18 @@ export class PrismaPromptRepository implements PromptRepository {
           p.audio?.id,
         ),
     );
+  }
+
+  async countByUserId(
+    userId: string,
+    filters?: { status?: string },
+  ): Promise<number> {
+    const where: any = { userId };
+    if (filters?.status) {
+      where.status = filters.status;
+    }
+
+    return this.prisma.prompt.count({ where });
   }
 
   async findPending(): Promise<Prompt[]> {
