@@ -16,5 +16,3 @@ export const privilegedActions = {
   MANAGE_MFA: 'MANAGE_MFA',
   DISABLE_MFA: 'DISABLE_MFA',
 };
-
-export const AUDIT_LOG_KEY = Symbol('AUDIT_LOG');

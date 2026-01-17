@@ -7,7 +7,6 @@ import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as fs from 'fs';
-import { AuditLogInterceptor } from './interceptors/audit-log.interceptor';
 import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
@@ -33,9 +32,6 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
     }),
-  );
-  app.useGlobalInterceptors(
-    new AuditLogInterceptor(app.get(Reflector), app.get(PrismaService)),
   );
   app.use(cookieParser('layas'));
   const configService = app.get(ConfigService);

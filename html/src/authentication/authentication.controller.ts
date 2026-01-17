@@ -19,7 +19,6 @@ import { ApiHeader } from '@nestjs/swagger';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 
 import { Request, Response } from 'express';
-import { AuditLog } from 'src/decorators/auditLog.decorator';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
 
 @Controller('auth')
@@ -31,7 +30,6 @@ export class AuthenticationController {
 
   @Post('register')
   @UseInterceptors(new TransformInterceptor(RegisterResponseDto))
-  @AuditLog('user_registration')
   async register(
     @Body() registerDto: RegisterDto,
   ): Promise<RegisterResponseDto> {
@@ -45,7 +43,6 @@ export class AuthenticationController {
   })
   @Post('login')
   @UseInterceptors(new TransformInterceptor(LoginResponseDto))
-  @AuditLog('user_login')
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
@@ -116,7 +113,6 @@ export class AuthenticationController {
 
   @UseGuards(RefreshTokenGuard)
   @Post('logout')
-  @AuditLog('user_logout')
   async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
