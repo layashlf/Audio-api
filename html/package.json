@@ -17,7 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed:users": "node load-test/seed-users.js",
+    "load-test:free": "artillery run load-test/rate-limit-free.yml",
+    "load-test:paid": "artillery run load-test/rate-limit-paid.yml"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.3",
@@ -29,7 +32,9 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.6",
+    "@nestjs/platform-socket.io": "^11.0.4",
     "@nestjs/swagger": "^11.2.0",
+    "@nestjs/websockets": "^11.0.4",
     "@prisma/client": "6.13.0",
     "@sentry/nestjs": "^10.4.0",
     "@sentry/profiling-node": "^10.4.0",
@@ -40,6 +45,8 @@
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
     "ioredis": "^5.7.0",
+    "meilisearch": "^0.45.0",
+    "node-cron": "^3.0.3",
     "nodemailer": "^7.0.5",
     "npm-check-updates": "^18.0.2",
     "otpauth": "^9.4.1",
@@ -48,8 +55,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "ua-parser-js": "^2.0.4",
-    "meilisearch": "^0.45.0"
+    "ua-parser-js": "^2.0.4"
   },
   "devDependencies": {
     "@angular-devkit/core": "^20.1.5",
@@ -69,10 +75,12 @@
     "@types/ua-parser-js": "^0.7.39",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
+    "artillery": "^2.0.27",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.0.5",
+    "node-fetch": "^3.3.2",
     "prettier": "^3.6.2",
     "prisma": "^6.13.0",
     "source-map-support": "^0.5.21",
