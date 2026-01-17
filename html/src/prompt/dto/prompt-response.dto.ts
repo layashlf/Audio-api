@@ -17,11 +17,5 @@ export class PromptResponseDto {
   userId: string;
 
   @Expose()
-  createdAt: Date;
-
-  @Expose()
-  updatedAt: Date;
-
-  @Expose()
   audioId?: string;
 }

@@ -30,7 +30,7 @@ export class PromptController {
     @Request() req,
   ): Promise<PromptResponseDto> {
     const prompt = await this.createPromptUseCase.execute(
-      req.user.id,
+      req.user.sub,
       dto.text,
     );
     return plainToClass(PromptResponseDto, prompt, {

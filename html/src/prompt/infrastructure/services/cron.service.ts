@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
 import * as cron from 'node-cron';
 import { PromptRepository } from '../../domain/repositories/prompt.repository';
 import { QueueService } from '../../../queue/queue.service';
@@ -6,6 +6,7 @@ import { QueueService } from '../../../queue/queue.service';
 @Injectable()
 export class CronService implements OnModuleInit {
   constructor(
+    @Inject('PromptRepository')
     private promptRepo: PromptRepository,
     private queueService: QueueService,
   ) {}

@@ -21,7 +21,11 @@ import { PrismaModule } from '../prisma/prisma.module';
     CancelSubscriptionUseCase,
     RateLimiterService,
   ],
-  exports: [RateLimiterService, GetSubscriptionUseCase],
+  exports: [
+    RateLimiterService,
+    GetSubscriptionUseCase,
+    'SubscriptionRepository',
+  ],
 })
 export class SubscriptionModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

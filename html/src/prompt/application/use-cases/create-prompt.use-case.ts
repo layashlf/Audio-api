@@ -6,6 +6,7 @@ import { SubscriptionRepository } from '../../../subscription/domain/repositorie
 @Injectable()
 export class CreatePromptUseCase {
   constructor(
+    @Inject('PromptRepository')
     private promptRepo: PromptRepository,
     @Inject('SubscriptionRepository')
     private subscriptionRepo: SubscriptionRepository,
