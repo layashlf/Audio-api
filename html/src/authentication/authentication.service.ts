@@ -12,7 +12,8 @@ import { RefreshTokensUseCase } from './application/use-cases/refresh-tokens.use
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
 import { CheckEmailExistsUseCase } from './application/use-cases/check-email-exists.use-case';
 
-import { Request, Response } from 'express';
+import { Request } from 'express';
+import { UserStatus } from '@prisma/client';
 
 @Injectable()
 export class AuthenticationService {
@@ -32,26 +33,15 @@ export class AuthenticationService {
       email: registerDto.email,
       password: registerDto.password,
       displayName: registerDto.displayName,
+      status: UserStatus.ACTIVE,
     });
-
-    // Send verification email
-    const userInfo = {
-      id: result.id,
-      email: result.email,
-      name: result.displayName || '',
-    };
-    this._sendEmailVerificationLink(userInfo);
 
     return plainToInstance(RegisterResponseDto, result, {
       excludeExtraneousValues: true,
     });
   }
 
-  async login(
-    loginData: LoginDto,
-    request: Request,
-    userAgent: string,
-  ): Promise<Partial<LoginResponseDto>> {
+  async login(loginData: LoginDto): Promise<Partial<LoginResponseDto>> {
     const result = await this.loginUseCase.execute({
       email: loginData.email,
       password: loginData.password,
@@ -97,23 +87,5 @@ export class AuthenticationService {
 
   async checkIfEmailExists(email: string) {
     return await this.checkEmailExistsUseCase.execute({ email });
-  }
-
-  private async _sendEmailVerificationLink(user: any) {
-    this.emailQueue.add(
-      'email',
-      {
-        to: user.email,
-        body: {
-          userId: user.id,
-        },
-        subject: 'Please verify your email',
-        action: 'VERIFY_IDENTITY',
-      },
-      {
-        attempts: 5,
-        backoff: { type: 'fixed', delay: 1000 },
-      },
-    );
   }
 }

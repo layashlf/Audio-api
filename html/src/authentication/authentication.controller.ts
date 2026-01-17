@@ -15,7 +15,6 @@ import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
 import { AuthenticationService } from './authentication.service';
 import { TransformInterceptor } from '../interceptors/response-transformer/response-transformer.interceptor';
 import { ConfigService } from '@nestjs/config';
-import { ApiHeader } from '@nestjs/swagger';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 
 import { Request, Response } from 'express';
@@ -43,7 +42,7 @@ export class AuthenticationController {
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
   ) {
-    const res = await this.authenticationService.login(loginDto, request);
+    const res = await this.authenticationService.login(loginDto);
 
     if (res.refreshToken) {
       // Set refresh token as httpOnly cookie for security
