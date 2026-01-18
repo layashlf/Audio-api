@@ -213,115 +213,19 @@ Free tier users get 20 requests per minute with standard queue priority. Paid us
 
 ### System Context Diagram
 
-```
-┌─────────────────────────────────────┐
-│         Audio-api Backend           │
-├─────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐   │
-│  │ Web/Mobile  │  │ Background  │   │
-│  │   Clients   │  │   Workers   │   │
-│  └─────────────┘  └─────────────┘   │
-├─────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐   │
-│  │ MeiliSearch │  │ PostgreSQL  │   │
-│  │   (Search)  │  │ (Database)  │   │
-│  └─────────────┘  └─────────────┘   │
-│                                     │
-│  ┌─────────────┐                    │
-│  │   Redis     │                    │
-│  │(Cache/Queue)│                    │
-│  └─────────────┘                    │
-└─────────────────────────────────────┘
-```
+![Context Diagram](./core/c4-level1-mermaid.png)
 
 ### Container Diagram
 
-```
-┌─────────────────────────────────────┐
-│       Audio-api Containers          │
-├─────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐   │
-│  │   NestJS    │  │   BullMQ    │   │
-│  │ API Server  │  │   Worker    │   │
-│  └─────────────┘  └─────────────┘   │
-├─────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐   │
-│  │ PostgreSQL  │  │   Redis     │   │
-│  │ (Database)  │  │ (Cache)     │   │
-│  └─────────────┘  └─────────────┘   │
-│                                     │
-│  ┌─────────────┐                    │
-│  │ MeiliSearch │                    │
-│  │   (Search)  │                    │
-│  └─────────────┘                    │
-└─────────────────────────────────────┘
-```
+![Context Diagram](./core/c4-level2-mermaid.png)
 
 ### Component Diagram
 
-```
-┌──────────────────────────────────────┐
-│       Application Layers             │
-├──────────────────────────────────────┤
-│  ┌─────────────────────────────────┐ │
-│  │    Presentation Layer           │ │
-│  │  ┌─────────────┬─────────────┐  │ │
-│  │  │ Controllers │    DTOs     │  │ │
-│  │  └─────────────┴─────────────┘  │ │
-│  └─────────────────────────────────┘ │
-├──────────────────────────────────────┤
-│  ┌─────────────────────────────────┐ │
-│  │    Application Layer            │ │
-│  │  ┌─────────────┬─────────────┐  │ │
-│  │  │  Use Cases  │  Services   │  │ │
-│  │  └─────────────┴─────────────┘  │ │
-│  └─────────────────────────────────┘ │
-├──────────────────────────────────────┤
-│  ┌─────────────────────────────────┐ │
-│  │      Domain Layer               │ │
-│  │  ┌─────────────┬─────────────┐  │ │
-│  │  │  Entities   │ Repositories│  │ │
-│  │  │             │ (Interfaces)│  │ │
-│  │  └─────────────┴─────────────┘  │ │
-│  └─────────────────────────────────┘ │
-├──────────────────────────────────────┤
-│  ┌─────────────────────────────────┐ │
-│  │   Infrastructure Layer          │ │
-│  │  ┌─────────────┬─────────────┐  │ │
-│  │  │Repositories │ External    │  │ │
-│  │  │(Implement.) │ Services    │  │ │
-│  │  └─────────────┴─────────────┘  │ │
-│  └─────────────────────────────────┘ │
-└─────────────────────────────────────┘
-```
+![Context Diagram](./core/c4-level3-mermaid.png)
 
-### Core Logic Pseudo-Code (Audio Generation Loop)
+### Core Logic Pseudo-Code
 
-```typescript
-// 1. Cron Service (Every 30s)
-function schedulePendingPrompts() {
-  const pendingPrompts = db.prompts.find({ status: "PENDING" });
-  for (const prompt of pendingPrompts) {
-    const priority = prompt.user.isPaid ? 10 : 1;
-    queue.add("audio-generation", { promptId: prompt.id }, { priority });
-  }
-}
-
-// 2. Worker Processor
-async function processJob(job) {
-  const prompt = db.prompts.get(job.data.promptId);
-  prompt.updateStatus("PROCESSING");
-
-  // Simulate AI Generation
-  const audio = await generateAudio(prompt.text);
-
-  db.audio.create({ ...audio, userId: prompt.userId });
-  searchIndex.add(audio); // Index for search
-
-  prompt.updateStatus("COMPLETED");
-  socket.emit(prompt.userId, "prompt-completed", audio);
-}
-```
+Please Refer to the file [Pseudo Codes](./core/pseudo-code.md)
 
 ## API Endpoints
 
