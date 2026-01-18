@@ -85,7 +85,7 @@ services:
 
   nest-redisinsight-server:
       container_name: nest-redisinsight-server
-      image: redis/redisinsight:latest
+      image: redis/redisinsight:2.54
       ports:
         - "5540:5540"
       volumes:
@@ -95,7 +95,7 @@ services:
 
   nest-meilisearch-server:
     container_name: nest-meilisearch-server
-    image: getmeili/meilisearch:latest
+    image: getmeili/meilisearch:v1.11
     ports:
       - "7700:7700"
     environment:
