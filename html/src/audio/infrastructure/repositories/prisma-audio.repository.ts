@@ -24,6 +24,17 @@ export class PrismaAudioRepository implements AudioRepository {
         fileSize: data.fileSize,
         duration: data.duration,
       },
+      select: {
+        id: true,
+        title: true,
+        url: true,
+        fileSize: true,
+        duration: true,
+        promptId: true,
+        userId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return Audio.fromPersistence({
@@ -44,6 +55,17 @@ export class PrismaAudioRepository implements AudioRepository {
       take: limit,
       skip: offset,
       orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        url: true,
+        fileSize: true,
+        duration: true,
+        promptId: true,
+        userId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return audios.map((audio) =>
@@ -64,6 +86,17 @@ export class PrismaAudioRepository implements AudioRepository {
   async findById(id: string): Promise<Audio | null> {
     const audio = await this.prisma.audio.findUnique({
       where: { id },
+      select: {
+        id: true,
+        title: true,
+        url: true,
+        fileSize: true,
+        duration: true,
+        promptId: true,
+        userId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     if (!audio) return null;
@@ -88,6 +121,17 @@ export class PrismaAudioRepository implements AudioRepository {
         data: {
           title: updates.title,
           updatedAt: new Date(),
+        },
+        select: {
+          id: true,
+          title: true,
+          url: true,
+          fileSize: true,
+          duration: true,
+          promptId: true,
+          userId: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
 
