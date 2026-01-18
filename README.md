@@ -162,16 +162,16 @@ The application implements JWT authentication with access and refresh tokens:
 2. API requests include the access token in the Authorization header
 3. When the access token expires, the client uses the refresh token to obtain a new token pair
 4. Refresh tokens are hashed with bcrypt and stored securely in the database
-5. Logout invalidates the refresh token by hashing it
+5. Logout invalidates the refresh token by marking it as revoked
 
 ## Token Invalidation Strategy
 
-Using token rotation instead of blacklisting:
+Using token rotation and explicit revocation:
 
 - Each refresh request issues new access and refresh token pairs
 - The old refresh token becomes invalid immediately
 - Refresh tokens are stored as bcrypt hashes in the database
-- Logout works by hashing the current refresh token
+- Logout works by setting the `isRevoked` flag on the token in the database
 - This approach eliminates the need for complex token blacklisting
 
 ## Job Queue Processing Flow
@@ -185,14 +185,14 @@ Using token rotation instead of blacklisting:
 
 ## Cron Scheduler Explanation
 
-A scheduled task runs every 30 seconds using `@nestjs/schedule`:
+A scheduled task runs every 30 seconds using `node-cron` initialized in `onModuleInit`:
 
 ```typescript
-@Cron('*/30 * * * * *')  // Every 30 seconds
-async handlePendingPrompts() {
-  // Find PENDING prompts
-  // Enqueue with priority based on subscription
-  // Update status to PROCESSING
+onModuleInit() {
+  cron.schedule('*/30 * * * * *', async () => {
+    // Find PENDING prompts
+    // Enqueue with priority based on subscription
+  });
 }
 ```
 
@@ -232,7 +232,7 @@ Free tier users get 20 requests per minute with standard queue priority. Paid us
 │                                     │
 │  ┌─────────────┐                    │
 │  │   Redis     │                    │
-│  │ (Cache/Queue│                    │
+│  │(Cache/Queue)│                    │
 │  └─────────────┘                    │
 └─────────────────────────────────────┘
 ```
@@ -263,23 +263,23 @@ Free tier users get 20 requests per minute with standard queue priority. Paid us
 ### Component Diagram
 
 ```
-┌─────────────────────────────────────┐
-│       Application Layers            │
-├─────────────────────────────────────┤
+┌──────────────────────────────────────┐
+│       Application Layers             │
+├──────────────────────────────────────┤
 │  ┌─────────────────────────────────┐ │
 │  │    Presentation Layer           │ │
 │  │  ┌─────────────┬─────────────┐  │ │
-│  │  │ Controllers │    DTOs    │  │ │
+│  │  │ Controllers │    DTOs     │  │ │
 │  │  └─────────────┴─────────────┘  │ │
 │  └─────────────────────────────────┘ │
-├─────────────────────────────────────┤
+├──────────────────────────────────────┤
 │  ┌─────────────────────────────────┐ │
 │  │    Application Layer            │ │
 │  │  ┌─────────────┬─────────────┐  │ │
-│  │  │  Use Cases  │  Services  │  │ │
+│  │  │  Use Cases  │  Services   │  │ │
 │  │  └─────────────┴─────────────┘  │ │
 │  └─────────────────────────────────┘ │
-├─────────────────────────────────────┤
+├──────────────────────────────────────┤
 │  ┌─────────────────────────────────┐ │
 │  │      Domain Layer               │ │
 │  │  ┌─────────────┬─────────────┐  │ │
@@ -287,12 +287,12 @@ Free tier users get 20 requests per minute with standard queue priority. Paid us
 │  │  │             │ (Interfaces)│  │ │
 │  │  └─────────────┴─────────────┘  │ │
 │  └─────────────────────────────────┘ │
-├─────────────────────────────────────┤
+├──────────────────────────────────────┤
 │  ┌─────────────────────────────────┐ │
 │  │   Infrastructure Layer          │ │
 │  │  ┌─────────────┬─────────────┐  │ │
-│  │  │Repositories │ External   │  │ │
-│  │  │(Implement.) │ Services   │  │ │
+│  │  │Repositories │ External    │  │ │
+│  │  │(Implement.) │ Services    │  │ │
 │  │  └─────────────┴─────────────┘  │ │
 │  └─────────────────────────────────┘ │
 └─────────────────────────────────────┘
