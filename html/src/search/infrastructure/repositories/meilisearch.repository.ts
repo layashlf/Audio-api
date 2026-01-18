@@ -9,7 +9,7 @@ import { Audio } from 'src/audio/domain';
 export class MeiliSearchRepository implements SearchRepository {
   private readonly logger = new Logger(MeiliSearchRepository.name);
 
-  constructor(private readonly meiliService: MeiliSearchService) { }
+  constructor(private readonly meiliService: MeiliSearchService) {}
 
   // Unified Search across multiple indexes using Meilisearch Federated Search.
   // Returns separate results for users and audio with individual pagination.
@@ -60,13 +60,9 @@ export class MeiliSearchRepository implements SearchRepository {
 
       // Calculate next cursors
       const usersNextCursor =
-        userResults.hits.length >= limit
-          ? (offset + limit).toString()
-          : null;
+        userResults.hits.length >= limit ? (offset + limit).toString() : null;
       const audioNextCursor =
-        audioResults.hits.length >= limit
-          ? (offset + limit).toString()
-          : null;
+        audioResults.hits.length >= limit ? (offset + limit).toString() : null;
 
       return {
         users: {
@@ -94,7 +90,12 @@ export class MeiliSearchRepository implements SearchRepository {
   // Indexing methods map Domain Entities to Index Documents.
   // This prevents Infrastructure leakage into the Use Cases.
 
-  async indexUser(user: UserEntity): Promise<void> {
+  async indexUser(user: {
+    id: string;
+    email: string;
+    displayName?: string;
+    createdAt: Date;
+  }): Promise<void> {
     const index = this.meiliService.getClient().index('users');
     await index.addDocuments([
       {
