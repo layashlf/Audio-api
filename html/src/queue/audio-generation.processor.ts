@@ -40,12 +40,7 @@ export class AudioGenerationProcessor extends WorkerHost {
     });
 
     // Index audio for search
-    await this.searchRepo.indexAudio({
-      id: audio.id,
-      title: audio.title,
-      userId: audio.userId,
-      promptId: audio.promptId,
-    });
+    await this.searchRepo.indexAudio(audio);
 
     // update prompt
     await this.promptRepo.update(promptId, {
