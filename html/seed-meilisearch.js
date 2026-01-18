@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { MeiliSearch } = require('meilisearch');
 const { PrismaClient } = require('@prisma/client');
 
@@ -28,15 +29,25 @@ async function seedMeiliSearch() {
   });
 
   if (audios.length > 0) {
-    const audioIndex = client.index('audios');
-    await audioIndex.addDocuments(audios);
-    console.log(`Indexed ${audios.length} audios`);
+    try {
+      const audioIndex = client.index('audios');
+      const task = await audioIndex.addDocuments(audios);
+      await client.waitForTask(task.taskUid);
+      console.log(`Indexed ${audios.length} audios`);
+    } catch (error) {
+      console.error('Error indexing audios:', error.message);
+    }
   }
 
   if (users.length > 0) {
-    const userIndex = client.index('users');
-    await userIndex.addDocuments(users);
-    console.log(`Indexed ${users.length} users`);
+    try {
+      const userIndex = client.index('users');
+      const task = await userIndex.addDocuments(users);
+      await client.waitForTask(task.taskUid);
+      console.log(`Indexed ${users.length} users`);
+    } catch (error) {
+      console.error('Error indexing users:', error.message);
+    }
   }
 
   await prisma.$disconnect();
