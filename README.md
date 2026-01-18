@@ -36,8 +36,8 @@ A NestJS backend for audio processing and generation. Users can submit text prom
 1. Clone the repository and navigate to the project:
 
 ```bash
-git clone <repository-url>
-cd musicgpt
+git clone https://github.com/layashlf/Audio-api.git
+cd Audio-api
 ```
 
 2. Copy the environment file:
@@ -54,7 +54,7 @@ Key environment variables:
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5433/musicgpt"
+DATABASE_URL="postgresql://user:password@localhost:5433/audio_api"
 
 # JWT
 JWT_SECRET="your-super-secret-jwt-key"
@@ -485,8 +485,8 @@ The tests simulate 60 requests/min for FREE (exceeds limit) and 120 requests/min
 
 ```bash
 npm run build
-docker build -t musicgpt-backend .
-docker run -p 3000:3000 musicgpt-backend
+docker build -t audio-api .
+docker run -p 3000:3000 audio-api
 ```
 
 ### Environment Variables
@@ -506,7 +506,6 @@ MEILI_HOST="http://meilisearch:7700"
 - **PostgreSQL**: Database on port 5433
 - **Redis**: Cache and queues on port 6379
 - **MeiliSearch**: Search engine on port 7700
-- **Mailpit**: Email testing on ports 1025/8025
 
 ## Contributing
 
