@@ -15,7 +15,7 @@ echo "Generating Prisma client..."
 npx prisma generate
 
 # Run migrations
-npx prisma migrate deploy
+npx prisma db push
 
 # Seed MeiliSearch indexes (Idempotent)
 node seed-meilisearch.js
