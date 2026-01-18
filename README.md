@@ -11,7 +11,6 @@ A NestJS backend for audio processing and generation. Users can submit text prom
 - Unified search across users and audio content
 - Background job processing with BullMQ
 - Redis caching with TTL
-- Email notifications
 - Docker containerization
 
 ## Tech Stack
@@ -21,7 +20,6 @@ A NestJS backend for audio processing and generation. Users can submit text prom
 - **Cache/Queue**: Redis with BullMQ
 - **Search**: MeiliSearch
 - **Authentication**: JWT with bcrypt hashing
-- **Email**: Nodemailer with BullMQ queues
 - **Testing**: Jest with Supertest
 - **Containerization**: Docker and Docker Compose
 
@@ -71,12 +69,6 @@ REDIS_PORT=6379
 MEILI_HOST="http://localhost:7700"
 MEILI_MASTER_KEY="masterKey"
 
-# Email (optional)
-SMTP_HOST="localhost"
-SMTP_PORT=1025
-SMTP_USER=""
-SMTP_PASS=""
-
 # Application
 NODE_ENV="development"
 PORT=3000
@@ -97,7 +89,6 @@ This starts:
 - PostgreSQL database (port 5433)
 - Redis cache (port 6379)
 - MeiliSearch (port 7700)
-- Mailpit for email testing (ports 1025, 8025)
 
 Access the application at http://localhost:3000
 
@@ -141,8 +132,7 @@ html/src/
 ├── config/                 # Environment validation
 ├── decorators/             # Custom decorators
 ├── interceptors/           # Response transformation
-├── utils/                  # Email service, helpers
-└── templates/              # Email templates
+└── utils/                  # Helper functions
 ```
 
 ## Architecture
