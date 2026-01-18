@@ -10,9 +10,6 @@ volumes:
   nest-postgres-data:
     name: c3757815ab775c267ba292a6ef9e33b50539d051
     external: false
-  nest-mailpit-data:
-    name: 1d96836f31e438ed12bee2c044c101b5a56201a0
-    external: false
   redisinsight-data:
     name: d1b2cd4ab4218657fc0a57752c34503945d8a126
     external: false
@@ -43,7 +40,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-
   nest-api-server:
     container_name: nest-api-server
     build:
@@ -63,32 +59,11 @@ services:
       - nest-api-network
     depends_on:
       - nest-postgres-server
-      - nest-mailpit-server
       - nest-redis-server
+      - nest-meilisearch-server
     entrypoint: [ "/bin/bash", "./entrypoint.sh", "development" ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-
-  nest-mailpit-server:
-    container_name: nest-mailpit-server
-    image: axllent/mailpit:v1.23
-    ports:
-      - '1025:1025'
-      - '8025:8025'
-    environment:
-      MP_DATABASE: /data/mailpit.db
-      MP_SMTP_AUTH_ACCEPT_ANY: 1
-      MP_SMTP_AUTH_ALLOW_INSECURE: 1
-    volumes:
-      - nest-mailpit-data:/data
-    networks:
-      - nest-api-network
-    healthcheck:
-      test: [ 'CMD-SHELL', 'nc -z localhost 1025' ]
       interval: 30s
       timeout: 10s
       retries: 3
