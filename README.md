@@ -93,6 +93,7 @@ This starts:
 - MeiliSearch (port 7700)
 
 Access the application at http://localhost:3000
+Access the documentation at http://localhost:3000/docs
 
 ### Local Development
 
@@ -362,7 +363,7 @@ The project includes Artillery-based load testing scripts to verify rate limitin
 2. Seed test users:
 
 ```bash
-cd html
+bash app.sh
 npm run seed:users
 ```
 
