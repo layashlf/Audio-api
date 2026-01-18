@@ -27,8 +27,8 @@ async function bootstrap() {
   app.setGlobalPrefix('v1');
 
   const config = new DocumentBuilder()
-    .setTitle('MusicGPT API')
-    .setDescription('Backend API for MusicGPT music generation platform')
+    .setTitle('Audio-api')
+    .setDescription('Backend API for audio processing and generation')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

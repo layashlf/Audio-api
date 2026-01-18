@@ -1,6 +1,6 @@
-# MusicGPT Backend API
+# Audio-api Backend
 
-A NestJS backend for the MusicGPT AI music creation platform. Users can submit text prompts that get processed into audio files through background jobs. The system includes user authentication, subscription management, rate limiting, and unified search.
+A NestJS backend for audio processing and generation. Users can submit text prompts that get processed into audio files through background jobs. The system includes user authentication, subscription management, rate limiting, and unified search.
 
 ## Features
 
@@ -166,32 +166,32 @@ Key architectural decisions:
 
 ## Authentication Flow
 
-The application uses JWT access + refresh token authentication:
+The application implements JWT authentication with access and refresh tokens:
 
-1. User registers/logs in → receives short-lived access token (15min) + long-lived refresh token (30 days)
-2. Access token used for API requests with Bearer header
-3. When access token expires, client uses refresh token to get new pair via `/auth/refresh`
-4. Refresh tokens are hashed and stored in database for security
-5. Logout invalidates refresh token by hashing it in the database
+1. User registers or logs in, receiving a short-lived access token (15 minutes) and long-lived refresh token (30 days)
+2. API requests include the access token in the Authorization header
+3. When the access token expires, the client uses the refresh token to obtain a new token pair
+4. Refresh tokens are hashed with bcrypt and stored securely in the database
+5. Logout invalidates the refresh token by hashing it
 
 ## Token Invalidation Strategy
 
-**Token Rotation Approach:**
+Using token rotation instead of blacklisting:
 
-- Each refresh request generates new access + refresh token pair
-- Old refresh token is invalidated immediately after use
-- Refresh tokens stored as bcrypt-hashed values in database
-- Logout hashes the current refresh token to invalidate it
-- No token blacklisting needed due to rotation strategy
+- Each refresh request issues new access and refresh token pairs
+- The old refresh token becomes invalid immediately
+- Refresh tokens are stored as bcrypt hashes in the database
+- Logout works by hashing the current refresh token
+- This approach eliminates the need for complex token blacklisting
 
 ## Job Queue Processing Flow
 
-1. User submits prompt via `POST /prompts` → status = `"PENDING"`
-2. Cron job (runs every 30 seconds) scans for PENDING prompts
-3. Paid users get priority (BullMQ priority: 10) over free users (priority: 1)
-4. Jobs queued with user priority for processing
-5. Worker processes job: PENDING → PROCESSING → COMPLETED
-6. On completion: creates Audio record, indexes for search, sends WebSocket notification
+1. User submits a prompt via `POST /prompts`, setting status to "PENDING"
+2. A cron job runs every 30 seconds to find pending prompts
+3. Paid users receive higher priority (BullMQ priority 10) compared to free users (priority 1)
+4. Jobs are queued based on user subscription level
+5. The worker processes each job: PENDING → PROCESSING → COMPLETED
+6. Upon completion, an audio record is created, indexed for search, and a WebSocket notification is sent
 
 ## Cron Scheduler Explanation
 
@@ -208,90 +208,104 @@ async handlePendingPrompts() {
 
 ## Cache Strategy & Invalidation Rules
 
-- **Redis-backed caching** with 1-minute TTL
-- **Cache keys**: `users:page:{page}:limit:{limit}`, `audio:page:{page}:limit:{limit}`
-- **Automatic invalidation** on UPDATE operations (PUT /users/:id, PUT /audio/:id)
-- **Cache miss** falls back to database query
-- **No caching** on POST operations to ensure data consistency
+Caching is implemented with Redis and 1-minute TTL. Cache keys follow the pattern `users:page:{page}:limit:{limit}` and `audio:page:{page}:limit:{limit}`. Updates automatically invalidate relevant cache entries, while cache misses fall back to database queries. POST operations bypass caching to maintain data consistency.
 
 ## Rate Limiting Logic
 
-- **Redis-backed sliding window** rate limiting using `@nestjs/throttler`
-- **FREE tier**: 20 requests/minute
-- **PAID tier**: 100 requests/minute
-- **Enforced on all authenticated routes** via guard middleware
-- **Returns 429 status** when limits exceeded
-- **User-specific limits** based on subscription status
+Rate limiting uses Redis-backed sliding windows with the `@nestjs/throttler` package. Free tier users get 20 requests per minute, while paid users receive 100. Limits are enforced on all authenticated routes through guard middleware, returning HTTP 429 when exceeded. Limits are determined by each user's subscription status.
 
 ## Unified Search Ranking Logic
 
-- **MeiliSearch** with custom ranking rules: `['words', 'typo', 'proximity', 'attribute', 'exactness']`
-- **Exact matches** score higher than partial matches
-- **User results** prioritized over audio results in response
-- **Ranking score** included in responses via `_rankingScore` field
-- **Cursor-based pagination** for efficient large result sets
+Search uses MeiliSearch with ranking rules prioritizing exact matches over partial matches. User results are prioritized over audio content in the response. Each result includes a ranking score, and cursor-based pagination handles large result sets efficiently.
 
 ## Subscription Perks Logic
 
-**FREE Tier:**
-
-- Rate limit: 20 requests/minute
-- Queue priority: 1 (standard)
-- Basic features only
-
-**PAID Tier:**
-
-- Rate limit: 100 requests/minute
-- Queue priority: 10 (high priority processing)
-- Faster prompt processing via prioritized job queue
+Free tier users get 20 requests per minute with standard queue priority. Paid users receive 100 requests per minute and high-priority job processing, ensuring faster prompt completion through the BullMQ priority queue system.
 
 ## Architecture Diagrams
 
 ### System Context Diagram
 
 ```
-[MusicGPT Backend]
-├── Users (Web/Mobile Clients)
-├── External Services
-│   ├── MeiliSearch (Search)
-│   ├── Redis (Cache/Queue)
-│   └── PostgreSQL (Database)
-└── Background Workers
-    └── Audio Generation Worker
+┌─────────────────────────────────────┐
+│         Audio-api Backend           │
+├─────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐   │
+│  │ Web/Mobile  │  │ Background  │   │
+│  │   Clients   │  │   Workers   │   │
+│  └─────────────┘  └─────────────┘   │
+├─────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐   │
+│  │ MeiliSearch │  │ PostgreSQL  │   │
+│  │   (Search)  │  │ (Database)  │   │
+│  └─────────────┘  └─────────────┘   │
+│                                     │
+│  ┌─────────────┐                    │
+│  │   Redis     │                    │
+│  │ (Cache/Queue│                    │
+│  └─────────────┘                    │
+└─────────────────────────────────────┘
 ```
 
 ### Container Diagram
 
 ```
-[MusicGPT System]
-├── API Container (NestJS)
-│   ├── Controllers
-│   ├── Use Cases
-│   ├── Repositories
-│   └── Services
-├── Worker Container (BullMQ)
-├── Database Container (PostgreSQL)
-├── Cache Container (Redis)
-└── Search Container (MeiliSearch)
+┌─────────────────────────────────────┐
+│       Audio-api Containers          │
+├─────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐   │
+│  │   NestJS    │  │   BullMQ    │   │
+│  │ API Server  │  │   Worker    │   │
+│  └─────────────┘  └─────────────┘   │
+├─────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐   │
+│  │ PostgreSQL  │  │   Redis     │   │
+│  │ (Database)  │  │ (Cache)     │   │
+│  └─────────────┘  └─────────────┘   │
+│                                     │
+│  ┌─────────────┐                    │
+│  │ MeiliSearch │                    │
+│  │   (Search)  │                    │
+│  └─────────────┘                    │
+└─────────────────────────────────────┘
 ```
 
 ### Component Diagram
 
 ```
-[API Application]
-├── Presentation Layer
-│   ├── Controllers
-│   └── DTOs
-├── Application Layer
-│   ├── Use Cases
-│   └── Services
-├── Domain Layer
-│   ├── Entities
-│   └── Repositories (Interfaces)
-└── Infrastructure Layer
-    ├── Repositories (Implementations)
-    ├── External Services
-    └── Database
+┌─────────────────────────────────────┐
+│       Application Layers            │
+├─────────────────────────────────────┤
+│  ┌─────────────────────────────────┐ │
+│  │    Presentation Layer           │ │
+│  │  ┌─────────────┬─────────────┐  │ │
+│  │  │ Controllers │    DTOs    │  │ │
+│  │  └─────────────┴─────────────┘  │ │
+│  └─────────────────────────────────┘ │
+├─────────────────────────────────────┤
+│  ┌─────────────────────────────────┐ │
+│  │    Application Layer            │ │
+│  │  ┌─────────────┬─────────────┐  │ │
+│  │  │  Use Cases  │  Services  │  │ │
+│  │  └─────────────┴─────────────┘  │ │
+│  └─────────────────────────────────┘ │
+├─────────────────────────────────────┤
+│  ┌─────────────────────────────────┐ │
+│  │      Domain Layer               │ │
+│  │  ┌─────────────┬─────────────┐  │ │
+│  │  │  Entities   │ Repositories│  │ │
+│  │  │             │ (Interfaces)│  │ │
+│  │  └─────────────┴─────────────┘  │ │
+│  └─────────────────────────────────┘ │
+├─────────────────────────────────────┤
+│  ┌─────────────────────────────────┐ │
+│  │   Infrastructure Layer          │ │
+│  │  ┌─────────────┬─────────────┐  │ │
+│  │  │Repositories │ External   │  │ │
+│  │  │(Implement.) │ Services   │  │ │
+│  │  └─────────────┴─────────────┘  │ │
+│  └─────────────────────────────────┘ │
+└─────────────────────────────────────┘
 ```
 
 ## API Endpoints
@@ -513,4 +527,4 @@ MEILI_HOST="http://meilisearch:7700"
 
 ## License
 
-This project is part of the MusicGPT platform.
+This project provides a scalable audio processing API.
