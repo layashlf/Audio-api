@@ -5,6 +5,7 @@ import { Password } from '../../domain/value-objects/password';
 import { IUserRepository } from '../../domain/repositories/user.repository';
 import { UserStatus } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { SearchRepository } from '../../../search/domain/repositories/search.repository';
 
 export interface RegisterUserInput {
   email: string;
@@ -28,6 +29,8 @@ export class RegisterUserUseCase {
   constructor(
     @Inject('IUserRepository')
     private readonly userRepository: IUserRepository,
+    @Inject('SearchRepository')
+    private readonly searchRepository: SearchRepository,
   ) {}
 
   async execute(input: RegisterUserInput): Promise<RegisterUserOutput> {
@@ -54,6 +57,13 @@ export class RegisterUserUseCase {
     console.log(user);
     // Save user
     await this.userRepository.save(user);
+
+    // Index user for search
+    await this.searchRepository.indexUser({
+      id: user.id,
+      email: user.getEmail().getValue(),
+      displayName: user.getDisplayName(),
+    });
 
     const userData = user.toPersistence();
     return {
