@@ -14,6 +14,11 @@ import { MeiliSearchService } from './infrastructure/services/meilisearch.servic
     MeiliSearchService,
     UnifiedSearchUseCase,
   ],
-  exports: [],
+  exports: [
+    {
+      provide: 'SearchRepository',
+      useClass: MeiliSearchRepository,
+    },
+  ],
 })
 export class SearchModule {}
