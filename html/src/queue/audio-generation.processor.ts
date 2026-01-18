@@ -6,6 +6,7 @@ import { PromptRepository } from '../prompt/domain/repositories/prompt.repositor
 import { AudioRepository } from '../audio/domain/repositories/audio.repository';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
 import { PromptStatus } from '../prompt/domain/entities/prompt';
+import { SearchRepository } from '../search/domain/repositories/search.repository';
 
 @Processor('audio-generation')
 @Injectable()
@@ -13,6 +14,7 @@ export class AudioGenerationProcessor extends WorkerHost {
   constructor(
     @Inject('PromptRepository') private promptRepo: PromptRepository,
     @Inject('AudioRepository') private audioRepo: AudioRepository,
+    @Inject('SearchRepository') private searchRepo: SearchRepository,
     private websocketGateway: WebsocketGateway,
   ) {
     super();
@@ -35,6 +37,14 @@ export class AudioGenerationProcessor extends WorkerHost {
       userId: prompt.userId,
       fileSize: Math.floor(Math.random() * 1000000),
       duration: Math.floor(Math.random() * 300) + 30,
+    });
+
+    // Index audio for search
+    await this.searchRepo.indexAudio({
+      id: audio.id,
+      title: audio.title,
+      userId: audio.userId,
+      promptId: audio.promptId,
     });
 
     // update prompt
