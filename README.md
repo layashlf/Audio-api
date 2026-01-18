@@ -143,13 +143,13 @@ The application follows clean architecture principles:
 
 Key architectural decisions:
 
-- Repository pattern for data access
-- Use cases for business logic encapsulation
-- Dependency injection throughout
-- JWT tokens stored as httpOnly cookies
-- Refresh tokens hashed in database
-- Rate limiting enforced at middleware level
-- Background jobs processed with BullMQ
+Key architectural decisions:
+
+- **Repository Pattern**: Abstracted database access to decouple domain logic from Prisma ORM, improving testability and separation of concerns.
+- **Use Case Driven**: Business logic is encapsulated in isolated Use Case classes (e.g., `RegisterUser`), ensuring Controllers remain thin and focused on HTTP transport.
+- **Federated Search**: Decoupled search (MeiliSearch) from the primary DB (Postgres) to handling complex queries/ranking without impacting transactional performance.
+- **Security-First Auth**: Storing refresh tokens as hashes and using `httpOnly` cookies mitigates XSS and token leakage risks.
+- **Async Processing**: Offloaded heavy tasks (Audio Gen) to BullMQ to keep the API responsive (non-blocking).
 
 ## Authentication Flow
 
