@@ -4,8 +4,4 @@ export class AudioResponseDto {
   url: string;
   fileSize?: number;
   duration?: number;
-  promptId: string;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
