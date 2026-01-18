@@ -47,12 +47,6 @@ import { CheckEmailExistsUseCase } from './application/use-cases/check-email-exi
     LogoutUseCase,
     CheckEmailExistsUseCase,
   ],
-  imports: [
-    PrismaModule,
-    JwtModule,
-    HelperModule,
-    BullModule.registerQueue({ name: 'email' }),
-    SearchModule,
-  ],
+  imports: [PrismaModule, JwtModule, HelperModule, SearchModule],
 })
 export class AuthenticationModule {}
