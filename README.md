@@ -26,7 +26,7 @@ A NestJS backend for audio processing and generation. Users can submit text prom
 ## Prerequisites
 
 - Docker and Docker Compose
-- Node.js 18+ (for local development)
+- Node.js 22+ (for local development)
 - npm or yarn
 
 ## Getting Started
@@ -80,7 +80,7 @@ API_PREFIX="/v1"
 Start all services:
 
 ```bash
-./start.sh
+bash ./start.sh
 ```
 
 This starts:
@@ -94,25 +94,22 @@ Access the application at http://localhost:3000
 
 ### Local Development
 
+You can manually install dependencies and run migrations using
+
 1. Install dependencies:
 
-```bash
-cd html
-npm install
-```
+   ```bash
+   bash app.sh
+   npm install
+   ```
 
 2. Set up the database:
 
-```bash
-npx prisma migrate dev
-npx prisma generate
-```
-
-3. Start the development server:
-
-```bash
-npm run start:dev
-```
+   ```bash
+   bash app.sh
+   npx prisma migrate dev
+   npx prisma generate
+   ```
 
 ## Project Structure
 
@@ -183,7 +180,7 @@ Using token rotation and explicit revocation:
 5. The worker processes each job: PENDING → PROCESSING → COMPLETED
 6. Upon completion, an audio record is created, indexed for search, and a WebSocket notification is sent
 
-## Cron Scheduler Explanation
+## Cron Scheduler
 
 A scheduled task runs every 30 seconds using `node-cron` initialized in `onModuleInit`:
 
@@ -296,6 +293,34 @@ Free tier users get 20 requests per minute with standard queue priority. Paid us
 │  │  └─────────────┴─────────────┘  │ │
 │  └─────────────────────────────────┘ │
 └─────────────────────────────────────┘
+```
+
+### Core Logic Pseudo-Code (Audio Generation Loop)
+
+```typescript
+// 1. Cron Service (Every 30s)
+function schedulePendingPrompts() {
+  const pendingPrompts = db.prompts.find({ status: "PENDING" });
+  for (const prompt of pendingPrompts) {
+    const priority = prompt.user.isPaid ? 10 : 1;
+    queue.add("audio-generation", { promptId: prompt.id }, { priority });
+  }
+}
+
+// 2. Worker Processor
+async function processJob(job) {
+  const prompt = db.prompts.get(job.data.promptId);
+  prompt.updateStatus("PROCESSING");
+
+  // Simulate AI Generation
+  const audio = await generateAudio(prompt.text);
+
+  db.audio.create({ ...audio, userId: prompt.userId });
+  searchIndex.add(audio); // Index for search
+
+  prompt.updateStatus("COMPLETED");
+  socket.emit(prompt.userId, "prompt-completed", audio);
+}
 ```
 
 ## API Endpoints
