@@ -62,6 +62,10 @@ export class User {
     return this.status;
   }
 
+  getCreatedAt(): Date {
+    return this.createdAt;
+  }
+
   canLogin(): boolean {
     return this.status === UserStatus.ACTIVE;
   }

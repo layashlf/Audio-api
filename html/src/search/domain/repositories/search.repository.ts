@@ -14,6 +14,7 @@ export interface SearchRepository {
     id: string;
     email: string;
     displayName?: string;
+    createdAt: Date;
   }): Promise<void>;
   indexAudio(audio: {
     id: string;

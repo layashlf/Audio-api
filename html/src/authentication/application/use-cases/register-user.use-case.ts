@@ -61,6 +61,7 @@ export class RegisterUserUseCase {
       id: user.id,
       email: user.getEmail().getValue(),
       displayName: user.getDisplayName(),
+      createdAt: user.getCreatedAt(),
     });
 
     const userData = user.toPersistence();
