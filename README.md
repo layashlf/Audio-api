@@ -301,7 +301,8 @@ The search functionality uses MeiliSearch for fast, full-text search. Data is au
 For existing data, run the seed script to populate the search indexes:
 
 ```bash
-docker exec -it nest-api-server bash -c "cd /app && node seed-meilisearch.js"
+bash app.sh
+node seed-meilisearch.js
 ```
 
 This indexes all existing users and audio files into MeiliSearch for search functionality.

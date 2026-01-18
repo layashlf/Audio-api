@@ -14,6 +14,12 @@ npm install
 echo "Generating Prisma client..."
 npx prisma generate
 
+# Run migrations
+npx prisma migrate deploy
+
+# Seed MeiliSearch indexes (Idempotent)
+node seed-meilisearch.js
+
 # Create SSL directory if it doesn't exist
 mkdir -p ssl
 
