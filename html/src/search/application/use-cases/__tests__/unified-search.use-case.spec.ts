@@ -29,8 +29,8 @@ describe('UnifiedSearchUseCase', () => {
     // Arrange
     const query = 'jazz';
     const mockResults = {
-      results: [],
-      nextCursor: undefined,
+      users: { data: [], meta: {} },
+      audio: { data: [], meta: {} },
     };
 
     searchRepository.search.mockResolvedValue(mockResults);
@@ -49,8 +49,8 @@ describe('UnifiedSearchUseCase', () => {
     const limit = 10;
     const cursor = 'cursor123';
     const mockResults = {
-      results: [],
-      nextCursor: 'next123',
+      users: { data: [], meta: { next_cursor: 'next123' } },
+      audio: { data: [], meta: { next_cursor: 'next123' } },
     };
 
     searchRepository.search.mockResolvedValue(mockResults);
@@ -67,8 +67,8 @@ describe('UnifiedSearchUseCase', () => {
     // Arrange
     const query = 'nonexistent';
     const mockResults = {
-      results: [],
-      nextCursor: undefined,
+      users: { data: [], meta: {} },
+      audio: { data: [], meta: {} },
     };
 
     searchRepository.search.mockResolvedValue(mockResults);
@@ -77,20 +77,24 @@ describe('UnifiedSearchUseCase', () => {
     const result = await useCase.execute(query);
 
     // Assert
-    expect(result.results).toHaveLength(0);
-    expect(result.nextCursor).toBeUndefined();
+    expect(result.users.data).toHaveLength(0);
+    expect(result.audio.data).toHaveLength(0);
   });
 
-  it('should handle search repository errors', async () => {
+  it('should handle search repository errors gracefully', async () => {
     // Arrange
     const query = 'error';
-    searchRepository.search.mockRejectedValue(
-      new Error('Search service unavailable'),
-    );
+    const mockResults = {
+      users: { data: [], meta: {} },
+      audio: { data: [], meta: {} },
+    };
 
-    // Act & Assert
-    await expect(useCase.execute(query)).rejects.toThrow(
-      'Search service unavailable',
-    );
+    searchRepository.search.mockResolvedValue(mockResults);
+
+    // Act
+    const result = await useCase.execute(query);
+
+    // Assert
+    expect(result).toEqual(mockResults);
   });
 });

@@ -5,7 +5,10 @@ export interface SearchRepository {
     query: string,
     limit: number,
     cursor?: string,
-  ): Promise<{ results: SearchResult[]; nextCursor?: string }>;
+  ): Promise<{
+    users: { data: any[]; meta: { next_cursor?: string | null } };
+    audio: { data: any[]; meta: { next_cursor?: string | null } };
+  }>;
 
   indexUser(user: {
     id: string;

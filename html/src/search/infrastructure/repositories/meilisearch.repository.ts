@@ -9,16 +9,19 @@ import { Audio } from 'src/audio/domain';
 export class MeiliSearchRepository implements SearchRepository {
   private readonly logger = new Logger(MeiliSearchRepository.name);
 
-  constructor(private readonly meiliService: MeiliSearchService) {}
+  constructor(private readonly meiliService: MeiliSearchService) { }
 
   // Unified Search across multiple indexes using Meilisearch Federated Search.
-  // Implements manual weighting to prioritize User results over Audio.
+  // Returns separate results for users and audio with individual pagination.
 
   async search(
     query: string,
     limit: number,
     cursor?: string,
-  ): Promise<{ results: SearchResult[]; nextCursor?: string }> {
+  ): Promise<{
+    users: { data: any[]; meta: { next_cursor?: string | null } };
+    audio: { data: any[]; meta: { next_cursor?: string | null } };
+  }> {
     const client = this.meiliService.getClient();
 
     // In Meilisearch, pagination is often offset-based.
@@ -26,69 +29,65 @@ export class MeiliSearchRepository implements SearchRepository {
     const offset = cursor ? parseInt(cursor, 10) : 0;
 
     try {
-      // Use Multi-Search to hit both indexes in a single network request
-      const response = await client.multiSearch({
-        queries: [
-          {
-            indexUid: 'users',
-            q: query,
-            limit: limit,
-            offset: offset,
-            showRankingScore: true, // Required to get the hit._rankingScore
-            attributesToRetrieve: ['id', 'email', 'displayName'],
-          },
-          {
-            indexUid: 'audio_files',
-            q: query,
-            limit: limit,
-            offset: offset,
-            showRankingScore: true,
-            attributesToRetrieve: ['id', 'title', 'userId', 'url'],
-          },
-        ],
-      });
+      // Perform separate searches for users and audio
+      const [userResults, audioResults] = await Promise.all([
+        client.index('users').search(query, {
+          limit: limit,
+          offset: offset,
+          attributesToRetrieve: ['id', 'email', 'displayName'],
+        }),
+        client.index('audio_files').search(query, {
+          limit: limit,
+          offset: offset,
+          attributesToRetrieve: ['id', 'title', 'userId', 'url'],
+        }),
+      ]);
 
-      const combinedResults: SearchResult[] = [];
+      // Process user results
+      const usersData = userResults.hits.map((hit) => ({
+        id: hit.id,
+        email: hit.email,
+        displayName: hit.displayName,
+      }));
 
-      response.results.forEach((indexResult) => {
-        const type = indexResult.indexUid === 'users' ? 'user' : 'audio';
+      // Process audio results
+      const audioData = audioResults.hits.map((hit) => ({
+        id: hit.id,
+        title: hit.title,
+        userId: hit.userId,
+        url: hit.url,
+      }));
 
-        // Weighting Logic: Users are slightly more important than Audio in global search
-        const weight = type === 'user' ? 1.0 : 0.8;
-
-        indexResult.hits.forEach((hit) => {
-          const { _rankingScore, ...cleanData } = hit;
-          combinedResults.push({
-            id: hit.id as string,
-            type: type,
-            data: cleanData,
-            // Normalize score based on Meilisearch ranking and our custom weight
-            score: (hit._rankingScore || 0) * weight,
-          });
-        });
-      });
-
-      // Sort combined results by the final weighted score
-      combinedResults.sort((a, b) => b.score - a.score);
-
-      // Slice to the requested limit
-      const topResults = combinedResults.slice(0, limit);
-
-      // Determine if more results exist across either index
-      const totalHits = response.results.reduce(
-        (sum, res) => sum + (res.hits.length || 0),
-        0,
-      );
-      const hasMore = totalHits >= limit;
-      const nextCursor = hasMore ? (offset + limit).toString() : undefined;
+      // Calculate next cursors
+      const usersNextCursor =
+        userResults.hits.length >= limit
+          ? (offset + limit).toString()
+          : null;
+      const audioNextCursor =
+        audioResults.hits.length >= limit
+          ? (offset + limit).toString()
+          : null;
 
       return {
-        results: topResults,
-        nextCursor,
+        users: {
+          data: usersData,
+          meta: {
+            next_cursor: usersNextCursor,
+          },
+        },
+        audio: {
+          data: audioData,
+          meta: {
+            next_cursor: audioNextCursor,
+          },
+        },
       };
     } catch (error) {
       this.logger.error(`Search failed for query "${query}": ${error.message}`);
-      return { results: [], nextCursor: undefined };
+      return {
+        users: { data: [], meta: {} },
+        audio: { data: [], meta: {} },
+      };
     }
   }
 
