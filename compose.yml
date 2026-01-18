@@ -118,8 +118,8 @@ services:
       networks:
         - nest-api-network
 
-  meilisearch:
-    container_name: meilisearch
+  nest-meilisearch-server:
+    container_name: nest-meilisearch-server
     image: getmeili/meilisearch:latest
     ports:
       - "7700:7700"
