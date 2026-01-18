@@ -83,6 +83,8 @@ Start all services:
 bash ./start.sh
 ```
 
+_(This script simply runs `docker-compose up` in the background)_
+
 This starts:
 
 - NestJS API server (port 3000)
