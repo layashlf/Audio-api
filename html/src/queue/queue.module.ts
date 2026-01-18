@@ -6,6 +6,7 @@ import { CronService } from '../prompt/infrastructure/services/cron.service';
 import { PromptModule } from '../prompt/prompt.module';
 import { AudioModule } from '../audio/audio.module';
 import { WebsocketModule } from '../websocket/websocket.module';
+import { SearchModule } from '../search/search.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { WebsocketModule } from '../websocket/websocket.module';
     PromptModule,
     AudioModule,
     WebsocketModule,
+    SearchModule,
   ],
   providers: [QueueService, AudioGenerationProcessor, CronService],
   exports: [QueueService],
