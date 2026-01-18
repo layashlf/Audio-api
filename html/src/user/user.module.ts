@@ -5,9 +5,10 @@ import { GetUsersUseCase } from './application/use-cases/get-users.use-case';
 import { GetUserByIdUseCase } from './application/use-cases/get-user-by-id.use-case';
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case';
 import { PrismaModule } from '../prisma/prisma.module';
+import { SearchModule } from '../search/search.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, SearchModule],
   controllers: [UserController],
   providers: [
     {
