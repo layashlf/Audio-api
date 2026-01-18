@@ -7,7 +7,6 @@ import { AuthenticationController } from './authentication.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { HelperModule } from '../utils/helper.module';
 import { BullModule } from '@nestjs/bullmq';
-import { EmailProcessor } from '../utils/EmailProcessor.service';
 import { PrivilegeTokenStrategy } from './strategies/privilegeToken.strategy';
 import { SearchModule } from '../search/search.module';
 
@@ -30,7 +29,6 @@ import { CheckEmailExistsUseCase } from './application/use-cases/check-email-exi
     AccessTokenStrategy,
     RefreshTokenStrategy,
     PrivilegeTokenStrategy,
-    EmailProcessor,
     // Repositories
     {
       provide: 'IUserRepository',

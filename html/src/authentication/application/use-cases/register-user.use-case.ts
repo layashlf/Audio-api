@@ -54,7 +54,6 @@ export class RegisterUserUseCase {
       input.displayName,
       input.status,
     );
-    console.log(user);
     // Save user
     await this.userRepository.save(user);
 
