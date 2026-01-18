@@ -1,8 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
 import { plainToInstance } from 'class-transformer';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { UserInfoDto } from './dto/user-info.dto';
 import { ITokenPayload } from './interfaces';
@@ -10,7 +8,6 @@ import { RegisterUserUseCase } from './application/use-cases/register-user.use-c
 import { LoginUseCase } from './application/use-cases/login.use-case';
 import { RefreshTokensUseCase } from './application/use-cases/refresh-tokens.use-case';
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
-import { CheckEmailExistsUseCase } from './application/use-cases/check-email-exists.use-case';
 
 import { Request } from 'express';
 import { UserStatus } from '@prisma/client';
@@ -24,8 +21,6 @@ export class AuthenticationService {
     private readonly loginUseCase: LoginUseCase,
     private readonly refreshTokensUseCase: RefreshTokensUseCase,
     private readonly logoutUseCase: LogoutUseCase,
-    private readonly checkEmailExistsUseCase: CheckEmailExistsUseCase,
-    @InjectQueue('email') private readonly emailQueue: Queue,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<RegisterResponseDto> {

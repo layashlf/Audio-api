@@ -68,7 +68,6 @@ describe('RegisterUserUseCase', () => {
       id: expect.any(String),
       email: 'test@example.com',
       displayName: 'Test User',
-      emailVerified: false,
       status: 'PENDING_APPROVAL',
       createdAt: expect.any(Date),
       updatedAt: expect.any(Date),

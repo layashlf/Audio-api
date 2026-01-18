@@ -17,7 +17,6 @@ describe('User Entity', () => {
       expect(user.id).toBe('user-id');
       expect(user.getEmail().getValue()).toBe('test@example.com');
       expect(user.getDisplayName()).toBe('Test User');
-      expect(user.isEmailVerified()).toBe(false);
       expect(user.getStatus()).toBe('PENDING_APPROVAL');
     });
 
@@ -31,7 +30,6 @@ describe('User Entity', () => {
 
       // Assert
       expect(user.getDisplayName()).toBeUndefined();
-      expect(user.isEmailVerified()).toBe(false);
       expect(user.getStatus()).toBe('PENDING_APPROVAL');
     });
   });
@@ -57,14 +55,6 @@ describe('User Entity', () => {
 
       // Assert
       expect(isValid).toBe(true);
-    });
-
-    it('should verify email', () => {
-      // Act
-      user.verifyEmail();
-
-      // Assert
-      expect(user.isEmailVerified()).toBe(true);
     });
 
     it('should activate user', () => {
@@ -100,7 +90,6 @@ describe('User Entity', () => {
         email: 'test@example.com',
         password: 'hashed-password',
         displayName: 'Test User',
-        emailVerified: false,
         status: 'PENDING_APPROVAL',
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
@@ -116,7 +105,6 @@ describe('User Entity', () => {
         email: 'test@example.com',
         password: 'hashed-password',
         displayName: 'Test User',
-        emailVerified: true,
         status: 'ACTIVE' as const,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -129,7 +117,6 @@ describe('User Entity', () => {
       expect(user.id).toBe('user-id');
       expect(user.getEmail().getValue()).toBe('test@example.com');
       expect(user.getDisplayName()).toBe('Test User');
-      expect(user.isEmailVerified()).toBe(true);
       expect(user.getStatus()).toBe('ACTIVE');
     });
   });

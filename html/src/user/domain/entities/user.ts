@@ -5,7 +5,6 @@ export class User {
     public readonly id: string,
     public email: string,
     public displayName?: string,
-    public emailVerified: boolean = false,
     public status: UserStatus = UserStatus.PENDING_APPROVAL,
     public subscriptionStatus: SubscriptionTier = SubscriptionTier.FREE,
     public readonly createdAt: Date = new Date(),
@@ -16,7 +15,6 @@ export class User {
     id: string;
     email: string;
     displayName?: string;
-    emailVerified: boolean;
     status: UserStatus;
     subscriptionStatus: SubscriptionTier;
     createdAt: Date;
@@ -26,7 +24,6 @@ export class User {
       data.id,
       data.email,
       data.displayName,
-      data.emailVerified,
       data.status,
       data.subscriptionStatus,
       data.createdAt,
@@ -43,7 +40,6 @@ export class User {
     id: string;
     email: string;
     displayName?: string;
-    emailVerified: boolean;
     status: UserStatus;
     subscriptionStatus: SubscriptionTier;
     createdAt: Date;
@@ -53,7 +49,6 @@ export class User {
       id: this.id,
       email: this.email,
       displayName: this.displayName,
-      emailVerified: this.emailVerified,
       status: this.status,
       subscriptionStatus: this.subscriptionStatus,
       createdAt: this.createdAt,

@@ -18,7 +18,6 @@ export interface RegisterUserOutput {
   id: string;
   email: string;
   displayName?: string;
-  emailVerified: boolean;
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -69,7 +68,6 @@ export class RegisterUserUseCase {
       id: userData.id,
       email: userData.email,
       displayName: userData.displayName,
-      emailVerified: userData.emailVerified,
       status: userData.status,
       createdAt: userData.createdAt,
       updatedAt: userData.updatedAt,

@@ -11,7 +11,6 @@ export class User {
     private email: Email,
     private password: Password,
     private displayName?: string,
-    private emailVerified: boolean = false,
     private status: UserStatus = UserStatus.PENDING_APPROVAL,
     private readonly createdAt: Date = new Date(),
     private updatedAt: Date = new Date(),
@@ -24,7 +23,7 @@ export class User {
     displayName?: string,
     status: UserStatus = UserStatus.PENDING_APPROVAL,
   ): User {
-    return new User(id, email, password, displayName, false, status);
+    return new User(id, email, password, displayName, status);
   }
 
   static fromPersistence(data: {
@@ -32,7 +31,6 @@ export class User {
     email: string;
     password: string;
     displayName?: string;
-    emailVerified: boolean;
     status: UserStatus;
     createdAt: Date;
     updatedAt: Date;
@@ -42,7 +40,6 @@ export class User {
       new Email(data.email),
       Password.fromHash(data.password),
       data.displayName,
-      data.emailVerified,
       data.status,
       data.createdAt,
       data.updatedAt,
@@ -61,21 +58,12 @@ export class User {
     return this.displayName;
   }
 
-  isEmailVerified(): boolean {
-    return this.emailVerified;
-  }
-
   getStatus(): UserStatus {
     return this.status;
   }
 
   canLogin(): boolean {
     return this.status === UserStatus.ACTIVE;
-  }
-
-  verifyEmail(): void {
-    this.emailVerified = true;
-    this.updatedAt = new Date();
   }
 
   activate(): void {
@@ -97,7 +85,6 @@ export class User {
     email: string;
     password: string;
     displayName?: string;
-    emailVerified: boolean;
     status: UserStatus;
     createdAt: Date;
     updatedAt: Date;
@@ -107,7 +94,6 @@ export class User {
       email: this.email.getValue(),
       password: this.password.getHashedValue(),
       displayName: this.displayName,
-      emailVerified: this.emailVerified,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

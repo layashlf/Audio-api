@@ -14,9 +14,6 @@ export class UserEntity {
   @ApiProperty()
   password: string;
 
-  @ApiProperty()
-  emailVerified: boolean = false;
-
   @ApiProperty({ required: false, enum: UserStatus })
   status?: UserStatus;
 

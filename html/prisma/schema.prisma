@@ -40,7 +40,6 @@ model User {
   email              String           @unique
   password           String
   displayName        String?          @map("display_name")
-  emailVerified      Boolean          @default(false) @map("email_verified")
   status             UserStatus?      @default(PENDING_APPROVAL)
   subscriptionStatus SubscriptionTier @default(FREE) @map("subscription_status")
 
