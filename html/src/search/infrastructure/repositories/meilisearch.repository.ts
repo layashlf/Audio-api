@@ -1,11 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MeiliSearchService } from '../services/meilisearch.service';
 import { SearchRepository } from '../../domain/repositories/search.repository';
 import { SearchResult } from '../../domain/entities/search-result';
+import { UserEntity } from 'src/authentication/entities/userEntity';
+import { Audio } from 'src/audio/domain';
 
 @Injectable()
 export class MeiliSearchRepository implements SearchRepository {
+  private readonly logger = new Logger(MeiliSearchRepository.name);
+
   constructor(private readonly meiliService: MeiliSearchService) {}
+
+  // Unified Search across multiple indexes using Meilisearch Federated Search.
+  // Implements manual weighting to prioritize User results over Audio.
 
   async search(
     query: string,
@@ -14,53 +21,110 @@ export class MeiliSearchRepository implements SearchRepository {
   ): Promise<{ results: SearchResult[]; nextCursor?: string }> {
     const client = this.meiliService.getClient();
 
-    // Search in users index
-    const userIndex = client.index('users');
-    const audioIndex = client.index('audios');
+    // In Meilisearch, pagination is often offset-based.
+    // We treat the cursor as the offset value.
+    const offset = cursor ? parseInt(cursor, 10) : 0;
 
-    // Perform searches with offset
-    const offset = cursor ? parseInt(cursor) : 0;
+    try {
+      // Use Multi-Search to hit both indexes in a single network request
+      const response = await client.multiSearch({
+        queries: [
+          {
+            indexUid: 'users',
+            q: query,
+            limit: limit,
+            offset: offset,
+            showRankingScore: true, // Required to get the hit._rankingScore
+            attributesToRetrieve: ['id', 'email', 'displayName'],
+          },
+          {
+            indexUid: 'audio_files',
+            q: query,
+            limit: limit,
+            offset: offset,
+            showRankingScore: true,
+            attributesToRetrieve: ['id', 'title', 'userId', 'url'],
+          },
+        ],
+      });
 
-    const [userResults, audioResults] = await Promise.all([
-      userIndex.search(query, { limit: limit * 2, offset }), // fetch more to combine
-      audioIndex.search(query, { limit: limit * 2, offset }),
+      const combinedResults: SearchResult[] = [];
+
+      response.results.forEach((indexResult) => {
+        const type = indexResult.indexUid === 'users' ? 'user' : 'audio';
+
+        // Weighting Logic: Users are slightly more important than Audio in global search
+        const weight = type === 'user' ? 1.0 : 0.8;
+
+        indexResult.hits.forEach((hit) => {
+          const { _rankingScore, ...cleanData } = hit;
+          combinedResults.push({
+            id: hit.id as string,
+            type: type,
+            data: cleanData,
+            // Normalize score based on Meilisearch ranking and our custom weight
+            score: (hit._rankingScore || 0) * weight,
+          });
+        });
+      });
+
+      // Sort combined results by the final weighted score
+      combinedResults.sort((a, b) => b.score - a.score);
+
+      // Slice to the requested limit
+      const topResults = combinedResults.slice(0, limit);
+
+      // Determine if more results exist across either index
+      const totalHits = response.results.reduce(
+        (sum, res) => sum + (res.hits.length || 0),
+        0,
+      );
+      const hasMore = totalHits >= limit;
+      const nextCursor = hasMore ? (offset + limit).toString() : undefined;
+
+      return {
+        results: topResults,
+        nextCursor,
+      };
+    } catch (error) {
+      this.logger.error(`Search failed for query "${query}": ${error.message}`);
+      return { results: [], nextCursor: undefined };
+    }
+  }
+
+  // Indexing methods map Domain Entities to Index Documents.
+  // This prevents Infrastructure leakage into the Use Cases.
+
+  async indexUser(user: UserEntity): Promise<void> {
+    const index = this.meiliService.getClient().index('users');
+    await index.addDocuments([
+      {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        createdAt: user.createdAt.getTime(), // Numeric dates for sorting if needed
+      },
     ]);
+  }
 
-    // Combine and weight
-    const results: SearchResult[] = [];
+  async indexAudio(audio: Audio): Promise<void> {
+    const index = this.meiliService.getClient().index('audios');
+    await index.addDocuments([
+      {
+        id: audio.id,
+        title: audio.title,
+        userId: audio.userId,
+        url: audio.url,
+        createdAt: audio.createdAt.getTime(),
+      },
+    ]);
+  }
 
-    // Weights: users 1.0, audios 0.8
-    userResults.hits.forEach((hit) => {
-      results.push({
-        id: hit.id as string,
-        type: 'user',
-        data: hit,
-        score: (hit._rankingScore as number) * 1.0,
-      });
-    });
+  async deleteUser(id: string): Promise<void> {
+    await this.meiliService.getClient().index('users').deleteDocument(id);
+  }
 
-    audioResults.hits.forEach((hit) => {
-      results.push({
-        id: hit.id as string,
-        type: 'audio',
-        data: hit,
-        score: (hit._rankingScore as number) * 0.8,
-      });
-    });
-
-    // Sort by score desc
-    results.sort((a, b) => b.score - a.score);
-
-    // Take top limit
-    const topResults = results.slice(0, limit);
-
-    // For next cursor, if there are more results, set next offset
-    const hasMore =
-      results.length > limit ||
-      userResults.hits.length === limit * 2 ||
-      audioResults.hits.length === limit * 2;
-    const nextCursor = hasMore ? (offset + limit).toString() : undefined;
-
-    return { results: topResults, nextCursor };
+  async deleteAudio(id: string): Promise<void> {
+    await this.meiliService.getClient().index('audios').deleteDocument(id);
   }
 }
