@@ -21,6 +21,8 @@ export interface SearchRepository {
     title: string;
     userId: string;
     promptId: string;
+    url: string;
+    createdAt: Date;
   }): Promise<void>;
   deleteUser(id: string): Promise<void>;
   deleteAudio(id: string): Promise<void>;

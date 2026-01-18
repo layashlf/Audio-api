@@ -107,7 +107,14 @@ export class MeiliSearchRepository implements SearchRepository {
     ]);
   }
 
-  async indexAudio(audio: Audio): Promise<void> {
+  async indexAudio(audio: {
+    id: string;
+    title: string;
+    userId: string;
+    promptId: string;
+    url: string;
+    createdAt: Date;
+  }): Promise<void> {
     const index = this.meiliService.getClient().index('audios');
     await index.addDocuments([
       {
