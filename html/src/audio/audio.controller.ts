@@ -19,6 +19,7 @@ import { GetAudiosUseCase } from './application/use-cases/get-audios.use-case';
 import { GetAudioByIdUseCase } from './application/use-cases/get-audio-by-id.use-case';
 import { UpdateAudioUseCase } from './application/use-cases/update-audio.use-case';
 import { AudioResponseDto } from './dto/audio-response.dto';
+import { PaginatedAudiosResponseDto } from './dto/audio-pagination-response.dto';
 import { UpdateAudioDto } from './dto/update-audio.dto';
 import { Audio } from './domain/entities/audio';
 
@@ -35,21 +36,45 @@ export class AudioController {
 
   @Get()
   @ApiOperation({ summary: 'Get all audio files with pagination' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (1-based)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Items to skip (alternative to page)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Audio files retrieved successfully',
-    type: [AudioResponseDto],
+    type: PaginatedAudiosResponseDto,
   })
   async getAudios(
+    @Query('page') page?: number,
     @Query('limit') limit: number = 10,
-    @Query('offset') offset: number = 0,
-  ): Promise<{ audios: AudioResponseDto[]; total: number }> {
+    @Query('offset') offset?: number,
+  ): Promise<PaginatedAudiosResponseDto> {
+    // Calculate offset from page if provided
+    if (page && page > 0) {
+      offset = (page - 1) * limit;
+    } else if (!offset) {
+      offset = 0;
+    }
+
     const result = await this.getAudiosUseCase.execute(limit, offset);
     return {
-      audios: result.audios.map(this.mapToDto),
-      total: result.total,
+      data: result.audios.map(this.mapToDto),
+      pagination: result.pagination,
     };
   }
 
@@ -91,10 +116,6 @@ export class AudioController {
       url: audio.url,
       fileSize: audio.fileSize,
       duration: audio.duration,
-      promptId: audio.promptId,
-      userId: audio.userId,
-      createdAt: audio.createdAt,
-      updatedAt: audio.updatedAt,
     };
   }
 }
