@@ -9,6 +9,7 @@ import { HelperModule } from '../utils/helper.module';
 import { BullModule } from '@nestjs/bullmq';
 import { EmailProcessor } from '../utils/EmailProcessor.service';
 import { PrivilegeTokenStrategy } from './strategies/privilegeToken.strategy';
+import { SearchModule } from '../search/search.module';
 
 // Domain
 import { PrismaUserRepository } from './infrastructure/repositories/prisma-user.repository';
@@ -53,6 +54,7 @@ import { CheckEmailExistsUseCase } from './application/use-cases/check-email-exi
     JwtModule,
     HelperModule,
     BullModule.registerQueue({ name: 'email' }),
+    SearchModule,
   ],
 })
 export class AuthenticationModule {}
