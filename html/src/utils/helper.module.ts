@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { HelperFunctions } from './helperFunctions';
 import { JwtModule } from '@nestjs/jwt';
-import { EmailService } from './EmailService';
-
 
 @Module({
-    imports: [JwtModule],
-    providers: [HelperFunctions, EmailService],
-    exports: [HelperFunctions, EmailService],
+  imports: [JwtModule],
+  providers: [HelperFunctions],
+  exports: [HelperFunctions],
 })
-export class HelperModule { }
+export class HelperModule {}
